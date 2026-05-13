@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Datos estáticos mockeados basados en la investigación
+const categories = [
+  {
+    name: "Pastas Frescas",
+    items: [
+      { id: 1, name: "Sorrentinos de Jamón y Queso", price: "4.50", desc: "Elaborados artesanalmente al estilo Buenos Aires." },
+      { id: 2, name: "Raviolis de Espinaca", price: "3.80", desc: "Pasta fresca rellena, sin conservantes." },
+      { id: 3, name: "Tallarines Frescos", price: "2.40", desc: "Corte tradicional para disfrutar con tu salsa favorita." },
+    ]
+  },
+  {
+    name: "Empanadas Argentinas",
+    items: [
+      { id: 4, name: "Empanada de Carne Cortada a Cuchillo", price: "1.50", desc: "Clásica receta argentina." },
+      { id: 5, name: "Empanada de Pollo", price: "1.30", desc: "Suave y jugosa." },
+      { id: 6, name: "Empanada de Jamón y Queso", price: "1.30", desc: "Un clásico irresistible." },
+    ]
+  },
+  {
+    name: "Especiales (Catering & Fiestas)",
+    items: [
+      { id: 7, name: "Sándwiches de Miga", price: "18.00", desc: "Precio por docena. Clásicos argentinos, suaves y frescos." },
+      { id: 8, name: "Matambre Arrollado", price: "18.00", desc: "Precio por Kg. Relleno tradicional." },
+      { id: 9, name: "Pionono", price: "16.00", desc: "Precio por Kg. Ideal para entrantes festivos." },
+      { id: 10, name: "Vitel Toné", price: "18.00", desc: "Precio por Kg. Ternera fileteada con salsa de atún y anchoas." },
+    ]
+  }
+];
+---
+
+<Layout title="Menú">
+  <div class="container page-header">
+    <h1 class="animate-fade-in">Nuestro Menú</h1>
+    <p class="subtitle animate-fade-in">Descubre nuestra selección de productos artesanales. Haz tu pedido online y recógelo en C/ Jaume Balmes, 59.</p>
+  </div>
+
+  <div class="container menu-section">
+    {categories.map((cat) => (
+      <div class="category">
+        <h2>{cat.name}</h2>
+        <div class="product-grid">
+          {cat.items.map((item) => (
+            <div class="product-card glass-panel">
+              <div class="product-info">
+                <h3>{item.name}</h3>
+                <p>{item.desc}</p>
+                <span class="price">€{item.price}</span>
+              </div>
+              <button class="btn-primary btn-sm add-btn">+ Añadir</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .page-header {
+    text-align: center;
+    padding: 4rem 0 2rem;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+  }
+
+  .category {
+    margin-bottom: 4rem;
+  }
+
+  .category h2 {
+    color: var(--secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .product-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.3s ease;
+  }
+
+  .product-card:hover {
+    border-color: var(--primary);
+  }
+
+  .product-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-sans);
+  }
+
+  .product-info p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .price {
+    display: block;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+</style>

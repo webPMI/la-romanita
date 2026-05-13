@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+
+:root {
+  --bg-color: #fdfbf7;      /* Cream/White background */
+  --bg-surface: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --text-main: #0b132b;     /* Deep Navy Blue */
+  --text-muted: #4a5568;
+  --primary: #bc1a22;       /* Deep Red from flyer */
+  --primary-hover: #9b151c;
+  --secondary: #0b132b;     /* Navy Blue */
+  --border-color: #e2e8f0;
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--text-main);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.btn-primary {
+  display: inline-block;
+  background-color: var(--primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-secondary {
+  display: inline-block;
+  background: transparent;
+  color: var(--secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 2px solid var(--secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary);
+  color: white;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(11, 19, 43, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Layout Utilities */
+.main-content {
+  flex-grow: 1;
+}

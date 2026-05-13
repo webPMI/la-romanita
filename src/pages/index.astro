@@ -1,0 +1,151 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Inicio">
+  <section class="hero">
+    <div class="container hero-content animate-fade-in">
+      <div class="badge">Desde 1989 en Palma</div>
+      <h1>Auténtica Pasta Fresca <br/> <span class="highlight">y Tradición Italo-Argentina</span></h1>
+      <p class="subtitle">Más de 30 años apasionándonos por la pasta, cualidades de cocción perfectas y un sabor equilibrado. Tradición & maestría en cada bocado.</p>
+      
+      <div class="hero-actions">
+        <a href="/menu" class="btn-primary">Ver Menú Completo</a>
+        <a href="#historia" class="btn-secondary">Nuestra Historia</a>
+      </div>
+    </div>
+    
+    <!-- Abstract background elements to make it premium -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+  </section>
+
+  <section class="features container">
+    <div class="feature-card glass-panel">
+      <div class="icon">🍝</div>
+      <h3>Pasta Fresca</h3>
+      <p>Sorrentinos, raviolis, ñoquis y tallarines elaborados a mano diariamente.</p>
+    </div>
+    <div class="feature-card glass-panel">
+      <div class="icon">🥟</div>
+      <h3>Empanadas</h3>
+      <p>Auténticas empanadas argentinas: carne, pollo, jamón y queso, y más.</p>
+    </div>
+    <div class="feature-card glass-panel">
+      <div class="icon">🥩</div>
+      <h3>Carnes & Gourmet</h3>
+      <p>Preparados selectos, sándwiches de miga y cortes a la parrilla.</p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 4rem 0;
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    background: rgba(217, 119, 6, 0.1);
+    color: var(--secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+  }
+  
+  h1 {
+    font-size: clamp(3rem, 5vw, 5rem);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  
+  .highlight {
+    color: var(--primary);
+    font-style: italic;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+  }
+  
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 1;
+    opacity: 0.15;
+  }
+  
+  .glow-1 {
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: var(--primary);
+  }
+  
+  .glow-2 {
+    bottom: 10%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: var(--secondary);
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: -4rem;
+    position: relative;
+    z-index: 10;
+    padding-bottom: 4rem;
+  }
+
+  .feature-card {
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card h3 {
+    margin-bottom: 1rem;
+    color: var(--text-main);
+  }
+
+  .feature-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+</style>
