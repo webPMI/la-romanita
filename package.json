@@ -11,6 +11,11 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
+    "cf:login": "wrangler login",
+    "cf:kv:create": "wrangler kv namespace create SESSION",
+    "cf:kv:create:preview": "wrangler kv namespace create SESSION --preview",
+    "cf:deploy:dry": "npm run build && wrangler deploy --dry-run",
+    "cf:deploy": "npm run build && wrangler deploy",
     "test": "vitest run",
     "test:ui": "vitest --ui"
   },

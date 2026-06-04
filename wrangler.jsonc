@@ -3,6 +3,13 @@
 	"compatibility_flags": ["global_fetch_strictly_public"],
 	"name": "laromanita",
 	"main": "@astrojs/cloudflare/entrypoints/server",
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "ce035c5e857a4b399cd88ad48273cb48",
+			"preview_id": "1a388db23bde4144be15750576a9ba01"
+		}
+	],
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
