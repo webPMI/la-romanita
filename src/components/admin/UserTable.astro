@@ -1,0 +1,449 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+import UserForm from './UserForm.astro';
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+
+// Consultar los perfiles reales desde el servidor
+const { data: profilesData, error } = await supabase
+  .from('profiles')
+  .select('id, name, email, role, client_type, cif, razon_social, direccion_fiscal')
+  .order('name', { ascending: true })
+  .limit(50);
+
+const usuarios = profilesData || [];
+---
+<section class="user-table-section">
+  <div class="table-actions">
+    <button class="btn-primary btn-add-user" id="btn-open-add-user">➕ Agregar Usuario</button>
+  </div>
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>ID Usuario</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Tarifa / Tipo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {usuarios.length === 0 ? (
+          <tr>
+            <td colspan="6" class="text-center text-muted">No hay perfiles de usuario registrados.</td>
+          </tr>
+        ) : (
+          usuarios.map(usuario => (
+            <tr>
+              <td class="font-bold">#{usuario.id ? usuario.id.slice(0, 8) : ''}</td>
+              <td class="font-bold">{usuario.name}</td>
+              <td>{usuario.email}</td>
+              <td>
+                <span class={`role-badge role-${usuario.role}`}>
+                  {usuario.role === 'admin' ? '👮 Admin' : '👤 Cliente'}
+                </span>
+              </td>
+              <td>
+                <span class={`type-badge type-${usuario.client_type}`}>
+                  {usuario.client_type === 'mayorista' ? '💼 Mayorista' : '🛒 Minorista'}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button 
+                    class="btn-secondary btn-xs btn-edit-user"
+                    data-id={usuario.id}
+                    data-name={usuario.name}
+                    data-email={usuario.email}
+                    data-role={usuario.role}
+                    data-client-type={usuario.client_type}
+                    data-cif={usuario.cif || ''}
+                    data-razon-social={usuario.razon_social || ''}
+                    data-direccion-fiscal={usuario.direccion_fiscal || ''}
+                  >
+                    ✏ Editar
+                  </button>
+                  <button class="btn-danger btn-xs btn-delete-user" data-id={usuario.id}>
+                    🗑 Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Contenedor del Modal Formulario (Inicialmente Oculto) -->
+  <div class="modal-overlay" id="user-modal-container">
+    <UserForm />
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    const modalContainer = document.getElementById('user-modal-container');
+    const openAddBtn = document.getElementById('btn-open-add-user');
+    const cancelBtn = document.getElementById('btn-cancel-user');
+    const closeBtn = document.getElementById('close-user-modal-btn');
+    
+    // Elementos del formulario
+    const formTitle = modalContainer?.querySelector('.modal-header h3');
+    const formSubmitBtn = document.getElementById('btn-submit-user');
+    
+    const usrIdInput = document.getElementById('usr-id') as HTMLInputElement;
+    const usrNameInput = document.getElementById('usr-name') as HTMLInputElement;
+    const usrEmailInput = document.getElementById('usr-email') as HTMLInputElement;
+    const usrRoleSelect = document.getElementById('usr-role') as HTMLSelectElement;
+    const usrClientTypeSelect = document.getElementById('usr-client-type') as HTMLSelectElement;
+
+    const usrCommercialContainer = document.getElementById('usr-commercial-fields-container') as HTMLDivElement;
+    const usrCifInput = document.getElementById('usr-cif') as HTMLInputElement;
+    const usrRazonSocialInput = document.getElementById('usr-razon-social') as HTMLInputElement;
+    const usrDireccionFiscalInput = document.getElementById('usr-direccion-fiscal') as HTMLInputElement;
+
+    function toggleCommercialFields() {
+      const isMayorista = usrClientTypeSelect.value === 'mayorista';
+      if (isMayorista) {
+        usrCommercialContainer?.classList.add('open');
+        if (usrCifInput) usrCifInput.required = true;
+        if (usrRazonSocialInput) usrRazonSocialInput.required = true;
+        if (usrDireccionFiscalInput) usrDireccionFiscalInput.required = true;
+      } else {
+        usrCommercialContainer?.classList.remove('open');
+        if (usrCifInput) {
+          usrCifInput.required = false;
+          usrCifInput.value = '';
+        }
+        if (usrRazonSocialInput) {
+          usrRazonSocialInput.required = false;
+          usrRazonSocialInput.value = '';
+        }
+        if (usrDireccionFiscalInput) {
+          usrDireccionFiscalInput.required = false;
+          usrDireccionFiscalInput.value = '';
+        }
+      }
+    }
+
+    usrClientTypeSelect?.addEventListener('change', toggleCommercialFields);
+
+    function openModal(isEdit = false) {
+      if (modalContainer) {
+        modalContainer.classList.add('show');
+        if (formTitle) formTitle.textContent = isEdit ? 'Editar Usuario' : 'Nuevo Usuario';
+        if (formSubmitBtn) formSubmitBtn.textContent = isEdit ? 'Guardar Cambios' : 'Crear Usuario';
+        toggleCommercialFields();
+      }
+    }
+
+    function closeModal() {
+      if (modalContainer) {
+        modalContainer.classList.remove('show');
+      }
+    }
+
+    // Botón Agregar
+    if (openAddBtn) {
+      openAddBtn.addEventListener('click', () => {
+        // Limpiar formulario
+        if (usrIdInput) usrIdInput.value = '';
+        if (usrNameInput) usrNameInput.value = '';
+        if (usrEmailInput) usrEmailInput.value = '';
+        if (usrRoleSelect) usrRoleSelect.value = 'client';
+        if (usrClientTypeSelect) usrClientTypeSelect.value = 'minorista';
+        if (usrCifInput) usrCifInput.value = '';
+        if (usrRazonSocialInput) usrRazonSocialInput.value = '';
+        if (usrDireccionFiscalInput) usrDireccionFiscalInput.value = '';
+        
+        openModal(false);
+      });
+    }
+
+    // Botones Editar
+    document.querySelectorAll('.btn-edit-user').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const email = btn.getAttribute('data-email');
+        const role = btn.getAttribute('data-role');
+        const clientType = btn.getAttribute('data-client-type');
+        const cif = btn.getAttribute('data-cif');
+        const razonSocial = btn.getAttribute('data-razon-social');
+        const direccionFiscal = btn.getAttribute('data-direccion-fiscal');
+
+        // Llenar formulario
+        if (usrIdInput) usrIdInput.value = id || '';
+        if (usrNameInput) usrNameInput.value = name || '';
+        if (usrEmailInput) usrEmailInput.value = email || '';
+        if (usrRoleSelect) usrRoleSelect.value = role || 'client';
+        if (usrClientTypeSelect) usrClientTypeSelect.value = clientType || 'minorista';
+        if (usrCifInput) usrCifInput.value = cif || '';
+        if (usrRazonSocialInput) usrRazonSocialInput.value = razonSocial || '';
+        if (usrDireccionFiscalInput) usrDireccionFiscalInput.value = direccionFiscal || '';
+
+        openModal(true);
+      });
+    });
+
+    // Cerrar Modal
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (modalContainer) {
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+      });
+    }
+
+    // Handler de Submit para guardar/editar usuario
+    const formElement = document.getElementById('user-form-element') as HTMLFormElement;
+    if (formElement) {
+      formElement.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = usrIdInput.value;
+        const name = usrNameInput.value.trim();
+        const email = usrEmailInput.value.trim();
+        const role = usrRoleSelect.value;
+        const client_type = usrClientTypeSelect.value;
+        const cif = usrCifInput ? usrCifInput.value.trim() : '';
+        const razon_social = usrRazonSocialInput ? usrRazonSocialInput.value.trim() : '';
+        const direccion_fiscal = usrDireccionFiscalInput ? usrDireccionFiscalInput.value.trim() : '';
+
+        if (!name || !email) {
+          alert('Por favor, rellene todos los campos obligatorios.');
+          return;
+        }
+
+        if (client_type === 'mayorista') {
+          if (!cif || !razon_social || !direccion_fiscal) {
+            alert('Los datos comerciales son obligatorios para clientes mayoristas.');
+            return;
+          }
+        }
+
+        try {
+          const res = await fetch(`${base}/api/admin/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: id || undefined,
+              name,
+              email,
+              role,
+              client_type,
+              cif,
+              razon_social,
+              direccion_fiscal
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal();
+            window.location.reload();
+          } else {
+            alert('Error al guardar el usuario: ' + (data.error || 'Desconocido'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error de conexión con el servidor.');
+        }
+      });
+    }
+
+    // Botón Eliminar
+    document.querySelectorAll('.btn-delete-user').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        if (confirm(`¿Estás seguro de que deseas eliminar el usuario #${id.slice(0, 8)}?`)) {
+          try {
+            const res = await fetch(`${base}/api/admin/users`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              window.location.reload();
+            } else {
+              alert('Error al eliminar usuario: ' + (data.error || 'Desconocido'));
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Error de conexión con el servidor.');
+          }
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .user-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .table-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .btn-add-user {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .role-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .role-admin {
+    background: rgba(217, 119, 6, 0.08);
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+  }
+
+  .role-client {
+    background: rgba(11, 19, 43, 0.06);
+    color: var(--secondary);
+  }
+
+  .type-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .type-mayorista {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .type-minorista {
+    background: rgba(74, 85, 104, 0.08);
+    color: var(--text-muted);
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-xs {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .btn-danger:hover {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 19, 43, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>

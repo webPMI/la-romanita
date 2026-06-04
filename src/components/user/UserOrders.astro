@@ -1,0 +1,342 @@
+---
+interface Props {
+  pedidos?: any[];
+  error?: string | null;
+}
+
+const { pedidos = [], error = null } = Astro.props;
+const base = import.meta.env.BASE_URL || '/';
+
+// Traducción y estilo de los estados de pedido
+const statusMap: any = {
+  'pendiente': { label: '⏳ Pendiente', class: 'status-pending' },
+  'listo': { label: '✅ Listo para Recoger', class: 'status-ready' },
+  'entregado': { label: '📦 Entregado', class: 'status-delivered' },
+};
+---
+
+<section class="user-orders-section animate-fade-in">
+  <div class="orders-card glass-panel">
+    <div class="orders-header">
+      <div class="header-icon">📦</div>
+      <h3>Mis Pedidos</h3>
+      <p class="orders-subtitle">Consulta el estado de tus compras para recoger</p>
+    </div>
+
+    {error && (
+      <div class="alert-msg alert-error">
+        <span class="alert-icon">❌</span>
+        <span class="alert-text">Error al cargar el historial de pedidos: {error}</span>
+      </div>
+    )}
+
+    {(!pedidos || pedidos.length === 0) ? (
+      <div class="empty-orders">
+        <p>No tienes ningún pedido registrado todavía.</p>
+        <a href={`${base}menu`} class="btn-primary-orders">Ir al Menú</a>
+      </div>
+    ) : (
+      <>
+        <!-- Desktop Table View -->
+        <div class="table-container">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>ID Pedido</th>
+                <th>Fecha de Compra</th>
+                <th>Estado</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidos.map((pedido: any) => {
+                const statusInfo = statusMap[pedido.status] || { label: pedido.status, class: 'status-unknown' };
+                return (
+                  <tr class="order-row">
+                    <td class="order-id">#{pedido.id.slice(0, 8)}</td>
+                    <td class="order-date">{new Date(pedido.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                    <td>
+                      <span class={`status-badge ${statusInfo.class}`}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                    <td class="order-total">€{pedido.total ? parseFloat(pedido.total).toFixed(2) : '0.00'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-orders-list">
+          {pedidos.map((pedido: any) => {
+            const statusInfo = statusMap[pedido.status] || { label: pedido.status, class: 'status-unknown' };
+            return (
+              <div class="mobile-order-card glass-panel">
+                <div class="card-header">
+                  <span class="order-id">#{pedido.id.slice(0, 8)}</span>
+                  <span class="order-total">€{pedido.total ? parseFloat(pedido.total).toFixed(2) : '0.00'}</span>
+                </div>
+                <div class="card-body">
+                  <span class="order-date">{new Date(pedido.created_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                  <span class={`status-badge ${statusInfo.class}`}>
+                    {statusInfo.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </>
+    )}
+    
+    <div class="back-link-container">
+      <a href={`${base}user/dashboard`} class="back-link">← Volver al Panel</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .user-orders-section {
+    max-width: 800px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .orders-card {
+    padding: 3rem 2.5rem;
+    border: 1px solid rgba(11, 19, 43, 0.08);
+    background: var(--color-glass);
+    border-radius: var(--radius-md);
+  }
+
+  .orders-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    background: rgba(11, 19, 43, 0.04);
+    width: 72px;
+    height: 72px;
+    line-height: 72px;
+    border-radius: 50%;
+    text-align: center;
+    border: 1px solid var(--color-border);
+  }
+
+  .orders-card h3 {
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-family: var(--font-serif);
+  }
+
+  .orders-subtitle {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+
+  /* Empty State */
+  .empty-orders {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    color: var(--color-text-muted);
+  }
+
+  .btn-primary-orders {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+  }
+
+  .btn-primary-orders:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(188, 26, 34, 0.2);
+  }
+
+  /* Table styling (Desktop) */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  .orders-table th, 
+  .orders-table td {
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .orders-table th {
+    font-weight: 700;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .order-row {
+    transition: background 0.2s ease;
+  }
+
+  .order-row:hover {
+    background: rgba(11, 19, 43, 0.01);
+  }
+
+  .order-id {
+    font-weight: 700;
+    color: var(--color-secondary);
+  }
+
+  .order-date {
+    color: var(--color-text-muted);
+  }
+
+  .order-total {
+    font-weight: 800;
+    color: var(--color-secondary);
+  }
+
+  /* Status Badges */
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .status-pending {
+    background: rgba(252, 211, 77, 0.18);
+    color: #b45309;
+    border: 1px solid rgba(252, 211, 77, 0.3);
+  }
+
+  .status-ready {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .status-delivered {
+    background: rgba(74, 85, 104, 0.08);
+    color: var(--color-text-muted);
+    border: 1px solid rgba(74, 85, 104, 0.15);
+  }
+
+  .status-unknown {
+    background: rgba(11, 19, 43, 0.06);
+    color: var(--color-secondary);
+  }
+
+  /* Mobile layout view */
+  .mobile-orders-list {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .mobile-order-card {
+    padding: 1.25rem;
+    border: 1px solid rgba(11, 19, 43, 0.06);
+    background: var(--color-glass);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mobile-order-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 0.5rem;
+  }
+
+  .mobile-order-card .card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .back-link-container {
+    margin-top: 2rem;
+    border-top: 1px dashed var(--color-border);
+    padding-top: 1.5rem;
+  }
+
+  .back-link {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: var(--color-primary);
+  }
+
+  /* Alerts */
+  .alert-msg {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+
+  .alert-error {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.15);
+    color: #991b1b;
+  }
+
+  @media (max-width: 650px) {
+    .table-container {
+      display: none;
+    }
+    .mobile-orders-list {
+      display: flex;
+    }
+    .orders-card {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
+

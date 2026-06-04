@@ -1,0 +1,132 @@
+---
+// Formulario para crear o editar contacto (Modal Card)
+const { contacto = null } = Astro.props;
+---
+<div class="modal-card glass-panel animate-fade-in">
+  <div class="modal-header">
+    <h3>Editar Información de Contacto</h3>
+    <button type="button" class="close-btn" id="close-contacto-modal-btn">✕</button>
+  </div>
+  
+  <form class="contacto-form" id="contacto-form-element">
+    <input type="hidden" name="id" id="contacto-id" value={contacto?.id || ''} />
+    
+    <div class="form-group">
+      <label for="contacto-tipo">Tipo de Información</label>
+      <input type="text" name="tipo" id="contacto-tipo" readonly class="readonly-input" />
+    </div>
+
+    <div class="form-group">
+      <label for="contacto-valor">Valor</label>
+      <input type="text" name="valor" id="contacto-valor" required placeholder="Ej. +34 600 000 000" />
+    </div>
+
+    <div class="form-group">
+      <label for="contacto-descripcion">Descripción (Opcional)</label>
+      <input type="text" name="descripcion" id="contacto-descripcion" placeholder="Ej. Teléfono de pedidos" />
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" id="btn-cancel-contacto">Cancelar</button>
+      <button type="submit" class="btn-primary" id="btn-submit-contacto">Guardar Cambios</button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .modal-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    background: var(--color-glass);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--secondary);
+    font-family: var(--font-sans);
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover {
+    color: var(--primary);
+  }
+
+  .contacto-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  input[type="text"] {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.8);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[readonly] {
+    background: rgba(0, 0, 0, 0.05);
+    cursor: not-allowed;
+    border-color: rgba(0, 0, 0, 0.05);
+    text-transform: capitalize;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(188, 26, 34, 0.15);
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.25rem;
+  }
+
+  .form-actions button {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+</style>

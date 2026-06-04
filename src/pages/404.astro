@@ -1,0 +1,23 @@
+---
+import '../styles/global.css';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Página no encontrada | La Romanita</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <main class="container text-center" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+      <h1 class="mb-lg" style="font-size:5rem;color:var(--color-primary);">404</h1>
+      <p class="mb-lg">¡Ups! La página que buscas no existe.<br />Puedes volver al inicio o regresar a la página anterior.</p>
+      <div style="display:flex;gap:var(--space-md);justify-content:center;">
+        <a href={base} class="btn-primary">Ir al inicio</a>
+        <button class="btn-primary" onclick="window.history.back()">Navegar atrás</button>
+      </div>
+    </main>
+  </body>
+</html>

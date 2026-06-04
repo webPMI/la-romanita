@@ -1,0 +1,38 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import UserOrders from '../../components/user/UserOrders.astro';
+import { getUserFromSession, getSessionTokens } from '../../lib/auth';
+import { getSupabaseServerClient } from '../../lib/supabase';
+
+const { cookies } = Astro;
+const base = import.meta.env.BASE_URL;
+const user = await getUserFromSession(cookies);
+if (!user) {
+  return Astro.redirect(`${base}login`);
+}
+
+let pedidos: any[] = [];
+let error: string | null = null;
+
+try {
+  const { accessToken } = getSessionTokens(cookies);
+  const supabase = getSupabaseServerClient(accessToken);
+  const { data, error: dbError } = await supabase
+    .from('orders')
+    .select('id, created_at, status, total')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (dbError) {
+    error = dbError.message;
+  } else {
+    pedidos = data || [];
+  }
+} catch (e: any) {
+  error = e.message || 'Error al conectar con el servidor';
+}
+---
+
+<Layout title="Mis Pedidos">
+  <UserOrders pedidos={pedidos} error={error} />
+</Layout>

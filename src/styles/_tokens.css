@@ -1,0 +1,52 @@
+/*
+  Archivo centralizado de tokens y utilidades CSS para La Romanita
+  Edita aquí la paleta, tipografías, espaciados y utilidades globales
+*/
+:root {
+  /* Paleta de colores */
+  --color-bg: #fdfbf7;
+  --color-surface: #ffffff;
+  --color-glass: rgba(255, 255, 255, 0.85);
+  --color-primary: #bc1a22;
+  --color-primary-hover: #9b151c;
+  --color-secondary: #0b132b;
+  --color-accent: #fcd34d;
+  --color-border: #e2e8f0;
+  --color-text-main: #0b132b;
+  --color-text-muted: #4a5568;
+
+  /* Tipografías */
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+
+  /* Espaciados */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 8rem;
+
+  /* Bordes y radios */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 32px;
+  --border: 1px solid var(--color-border);
+
+  /* Aliases de compatibilidad con estilos antiguos */
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --secondary: var(--color-secondary);
+  --text-main: var(--color-text-main);
+  --text-muted: var(--color-text-muted);
+  --bg-glass: var(--color-glass);
+  --bg-surface: var(--color-surface);
+  --border-color: var(--color-border);
+}
+
+/* Utilidades globales */
+.hide {
+  display: none !important;
+}
+.text-center {
+  text-align: center !important;
+}

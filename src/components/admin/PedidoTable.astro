@@ -1,0 +1,268 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+
+// Consultar los pedidos reales desde el servidor
+const { data: ordersData, error } = await supabase
+  .from('orders')
+  .select('id, user_id, created_at, status, total, items')
+  .order('created_at', { ascending: false })
+  .limit(50);
+
+const pedidos = ordersData || [];
+
+// Helper para formatear fecha
+const formatDate = (isoString: string) => {
+  const date = new Date(isoString);
+  return date.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+---
+<section class="pedido-table-section">
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>ID Pedido</th>
+          <th>Cliente</th>
+          <th>Fecha y Hora</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pedidos.length === 0 ? (
+          <tr>
+            <td colspan="6" class="text-center text-muted">No se han registrado pedidos en el sistema.</td>
+          </tr>
+        ) : (
+          pedidos.map(pedido => (
+            <tr>
+              <td class="font-bold">#{pedido.id.slice(0, 8)}</td>
+              <td>
+                {pedido.user_id ? (
+                  <span class="user-id-badge" title={pedido.user_id}>👤 Registrado</span>
+                ) : (
+                  <span class="guest-id-badge">🚪 Invitado</span>
+                )}
+              </td>
+              <td>{formatDate(pedido.created_at)}</td>
+              <td>
+                <span class={`status-badge status-${pedido.status.toLowerCase()}`}>
+                  {pedido.status}
+                </span>
+              </td>
+              <td class="font-bold">€{parseFloat(pedido.total).toFixed(2)}</td>
+              <td>
+                <div class="row-actions">
+                  <button 
+                    class="btn-secondary btn-xs btn-view-order" 
+                    data-id={pedido.id}
+                    data-items={JSON.stringify(pedido.items)}
+                  >
+                    👁 Ver Detalles
+                  </button>
+                  <button class="btn-primary btn-xs btn-next-status" data-id={pedido.id} data-status={pedido.status}>
+                    🚀 Avanzar Estado
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    // Manejar click en "Ver Detalles"
+    document.querySelectorAll('.btn-view-order').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const itemsJson = btn.getAttribute('data-items');
+        try {
+          /** @type {Array<{ qty: number; name: string; price: number | string }>} */
+          const items = JSON.parse(itemsJson || '[]');
+          let listStr = '';
+          for (const current of items) {
+            const line = `• ${current.qty}x ${current.name} (€${parseFloat(String(current.price)).toFixed(2)})`;
+            listStr = listStr ? `${listStr}\n${line}` : line;
+          }
+          alert(`Detalles del Pedido #${id?.slice(0, 8)}:\n\n${listStr}`);
+        } catch (e) {
+          alert('No se pudieron cargar los detalles del pedido.');
+        }
+      });
+    });
+
+    // Manejar click en "Avanzar Estado"
+    document.querySelectorAll('.btn-next-status').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        const currentStatus = btn.getAttribute('data-status');
+        let nextStatus = '';
+
+        if (currentStatus === 'pendiente') nextStatus = 'listo';
+        else if (currentStatus === 'listo') nextStatus = 'entregado';
+
+        if (nextStatus) {
+          if (confirm(`¿Cambiar estado del pedido #${id?.slice(0, 8)} de "${currentStatus}" a "${nextStatus}"?`)) {
+            try {
+              const res = await fetch(`${base}/api/admin/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, action: 'next' })
+              });
+              const data = await res.json();
+              if (res.ok && data.success) {
+                window.location.reload();
+              } else {
+                alert('Error al actualizar el pedido: ' + (data.error || 'Desconocido'));
+              }
+            } catch (err) {
+              alert('Error de conexión.');
+            }
+          }
+        } else {
+          alert('El pedido ya se encuentra en estado "entregado".');
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .pedido-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .table-actions h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: var(--secondary);
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .user-id-badge {
+    background: rgba(11, 19, 43, 0.06);
+    color: var(--secondary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .guest-id-badge {
+    background: rgba(74, 85, 104, 0.06);
+    color: var(--text-muted);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+  }
+
+  .status-pendiente {
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+  }
+
+  .status-listo {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .status-entregado {
+    background: rgba(74, 85, 104, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(74, 85, 104, 0.2);
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-xs {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+</style>

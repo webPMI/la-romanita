@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Políticas de Privacidad">
+  <section class="container politicas">
+    <h1>Políticas de Privacidad</h1>
+    <p>
+      En La Romanita tratamos tus datos personales únicamente para gestionar
+      pedidos, contacto y comunicaciones relacionadas con el servicio.
+    </p>
+
+    <h2>Datos que recopilamos</h2>
+    <ul>
+      <li>Datos de registro: nombre, apellidos, correo y teléfono.</li>
+      <li>Datos de pedidos: productos, importe, estado e historial de compra.</li>
+      <li>Datos de contacto cuando nos escribes por formularios o WhatsApp.</li>
+    </ul>
+
+    <h2>Finalidad del tratamiento</h2>
+    <ul>
+      <li>Procesar y entregar pedidos.</li>
+      <li>Atender consultas y soporte.</li>
+      <li>Enviar confirmaciones de pedido y avisos operativos.</li>
+    </ul>
+
+    <h2>Conservación y seguridad</h2>
+    <p>
+      Conservamos los datos el tiempo necesario para la prestación del servicio
+      y cumplimos medidas de seguridad razonables para proteger la información.
+    </p>
+
+    <h2>Derechos</h2>
+    <p>
+      Puedes solicitar acceso, rectificación o eliminación de tus datos
+      contactándonos por nuestros canales oficiales publicados en la web.
+    </p>
+
+    <p class="small-note">
+      Última actualización: 04/06/2026.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .politicas {
+    max-width: 840px;
+    margin: 2rem auto;
+    padding-bottom: 2rem;
+  }
+
+  .politicas h1 {
+    margin-bottom: 1rem;
+  }
+
+  .politicas h2 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .politicas p,
+  .politicas li {
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  .small-note {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+  }
+</style>

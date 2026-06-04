@@ -1,0 +1,88 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import UserProfile from '../../components/user/UserProfile.astro';
+import { getUserFromSession, getSessionTokens } from '../../lib/auth';
+import { getSupabaseServerClient } from '../../lib/supabase';
+
+const { cookies } = Astro;
+const base = import.meta.env.BASE_URL;
+let user = await getUserFromSession(cookies);
+if (!user) {
+  return Astro.redirect(`${base}login`);
+}
+
+let mensaje = '';
+let success = false;
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const name = formData.get('name')?.toString().trim() || '';
+    const telefono = formData.get('telefono')?.toString().trim() || '';
+    const cif = formData.get('cif')?.toString().trim() || '';
+    const razon_social = formData.get('razon_social')?.toString().trim() || '';
+    const direccion_fiscal = formData.get('direccion_fiscal')?.toString().trim() || '';
+
+    if (!name) {
+      mensaje = 'El nombre completo es requerido.';
+    } else if (user.client_type === 'mayorista' && (!cif || !razon_social || !direccion_fiscal)) {
+      mensaje = 'Los datos comerciales (CIF, Razón Social y Dirección Fiscal) son obligatorios para mayoristas.';
+    } else {
+      const { accessToken } = getSessionTokens(cookies);
+      const supabase = getSupabaseServerClient(accessToken);
+
+      const updateData: any = { name, phone: telefono };
+      if (user.client_type === 'mayorista') {
+        updateData.cif = cif;
+        updateData.razon_social = razon_social;
+        updateData.direccion_fiscal = direccion_fiscal;
+      }
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', user.id);
+
+      if (updateError) {
+        mensaje = `Error al actualizar: ${updateError.message}`;
+      } else {
+        success = true;
+        mensaje = 'Perfil actualizado con éxito.';
+        // Volver a obtener el usuario actualizado para el render
+        const updatedUser = await getUserFromSession(cookies);
+        if (updatedUser) {
+          user = updatedUser;
+        }
+      }
+    }
+  } catch (e: any) {
+    mensaje = `Ocurrió un error inesperado: ${e.message || e}`;
+  }
+}
+
+// Convertimos el perfil del backend para que coincida con el prop 'telefono'
+const userProp = {
+  name: user.name,
+  email: user.email,
+  telefono: user.phone || '',
+  client_type: user.client_type,
+  cif: user.cif || '',
+  razon_social: user.razon_social || '',
+  direccion_fiscal: user.direccion_fiscal || ''
+};
+---
+
+<Layout title="Mi Perfil">
+  <UserProfile user={userProp} mensaje={mensaje} success={success} />
+
+  {success && (
+    <script is:inline define:vars={{ user }}>
+      // Sincronizar el localStorage en el cliente
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      currentUser.name = user.name;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      // Despachar el evento para actualizar la barra de navegación en tiempo real
+      window.dispatchEvent(new Event('auth-changed'));
+    </script>
+  )}
+</Layout>

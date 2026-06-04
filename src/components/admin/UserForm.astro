@@ -1,0 +1,211 @@
+---
+// Formulario para crear o editar perfil de usuario (Modal Card)
+const { user = null } = Astro.props;
+---
+<div class="modal-card glass-panel animate-fade-in">
+  <div class="modal-header">
+    <h3>{user ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
+    <button type="button" class="close-btn" id="close-user-modal-btn">✕</button>
+  </div>
+  
+  <form class="user-form" id="user-form-element">
+    <input type="hidden" name="id" id="usr-id" value={user?.id || ''} />
+    
+    <div class="form-group">
+      <label for="usr-name">Nombre Completo</label>
+      <input type="text" name="name" id="usr-name" value={user?.name || ''} required placeholder="Ej. Juan Pérez" />
+    </div>
+
+    <div class="form-group">
+      <label for="usr-email">Email</label>
+      <input type="email" name="email" id="usr-email" value={user?.email || ''} required placeholder="nombre@correo.com" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="usr-role">Rol en el Sistema</label>
+        <select name="role" id="usr-role" required>
+          <option value="client" selected={user?.role === 'client'}>Cliente</option>
+          <option value="admin" selected={user?.role === 'admin'}>Administrador</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="usr-client-type">Tipo de Cliente (Tarifa)</label>
+        <select name="client_type" id="usr-client-type" required>
+          <option value="minorista" selected={user?.client_type === 'minorista'}>Minorista</option>
+          <option value="mayorista" selected={user?.client_type === 'mayorista'}>Mayorista</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Campos comerciales para mayoristas con animación suave -->
+    <div id="usr-commercial-fields-container" class="collapsible-container">
+      <div class="collapsible-content">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="usr-cif">NIF / CIF</label>
+            <input type="text" name="cif" id="usr-cif" placeholder="Ej. B12345678" />
+          </div>
+          <div class="form-group">
+            <label for="usr-razon-social">Razón Social</label>
+            <input type="text" name="razon_social" id="usr-razon-social" placeholder="Ej. La Romanita S.L." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="usr-direccion-fiscal">Dirección Fiscal</label>
+          <input type="text" name="direccion_fiscal" id="usr-direccion-fiscal" placeholder="Ej. Calle Mayor 12, Madrid" />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" id="btn-cancel-user">Cancelar</button>
+      <button type="submit" class="btn-primary" id="btn-submit-user">{user ? 'Guardar Cambios' : 'Crear Usuario'}</button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .modal-card {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--secondary);
+    font-family: var(--font-sans);
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover {
+    color: var(--primary);
+  }
+
+  .user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  input[type="text"], input[type="email"], select {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.8);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="text"]:focus, input[type="email"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(188, 26, 34, 0.15);
+  }
+
+  select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.25rem;
+  }
+
+  .form-actions button {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Collapsible Container for Commercial Fields */
+  .collapsible-container {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                margin-top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    margin-top: 0;
+  }
+
+  .collapsible-container.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .collapsible-content {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transform: translateY(-15px);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .collapsible-container.open .collapsible-content {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 576px) {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+  }
+</style>

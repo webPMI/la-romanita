@@ -1,0 +1,16 @@
+---
+// Panel principal del administrador
+const base = import.meta.env.BASE_URL;
+---
+<section class="admin-dashboard">
+  <h1>Panel de Administración</h1>
+  <div class="admin-sections">
+    <a href={`${base}admin/productos`} class="admin-link">Gestionar Productos</a>
+    <a href={`${base}admin/categorias`} class="admin-link">Gestionar Categorías</a>
+    <a href={`${base}admin/usuarios`} class="admin-link">Gestionar Usuarios</a>
+    <a href={`${base}admin/pedidos`} class="admin-link">Gestionar Pedidos</a>
+    <a href={`${base}admin/horarios`} class="admin-link">Gestionar Horarios</a>
+    <a href={`${base}admin/contacto`} class="admin-link">Gestionar Contacto</a>
+    <a href={`${base}admin/banners`} class="admin-link">Gestionar Banners</a>
+  </div>
+</section>

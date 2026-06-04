@@ -1,0 +1,367 @@
+---
+interface Props {
+  user: {
+    name?: string;
+    email?: string;
+    telefono?: string;
+    client_type?: 'minorista' | 'mayorista';
+    cif?: string;
+    razon_social?: string;
+    direccion_fiscal?: string;
+  };
+  mensaje?: string;
+  success?: boolean;
+}
+
+const { user, mensaje = '', success = false } = Astro.props;
+---
+
+<section class="user-profile-section animate-fade-in">
+  <div class="profile-card glass-panel">
+    <div class="profile-header">
+      <div class="avatar-badge">👤</div>
+      <h3>Mi Perfil</h3>
+      <div class="profile-subtitle">
+        <span>Gestiona la información de tu cuenta</span>
+        {user.client_type === 'mayorista' ? (
+          <span class="badge badge-mayorista">Cliente Mayorista</span>
+        ) : (
+          <span class="badge badge-minorista">Cliente Minorista</span>
+        )}
+      </div>
+    </div>
+
+    {mensaje && (
+      <div class={`alert-msg ${success ? 'alert-success' : 'alert-error'} animate-pop-in`}>
+        <span class="alert-icon">{success ? '✅' : '❌'}</span>
+        <span class="alert-text">{mensaje}</span>
+      </div>
+    )}
+
+    <form method="POST" class="profile-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Nombre completo</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="name" name="name" value={user.name || ''} required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email (No modificable)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="email" name="email" value={user.email || ''} readonly class="input-readonly" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📱</span>
+            <input type="text" id="telefono" name="telefono" value={user.telefono || ''} placeholder="Ej. +34 600 000 000" />
+          </div>
+        </div>
+
+        {user.client_type === 'mayorista' && (
+          <div class="wholesale-fields-section">
+            <h4 class="section-title">Datos Comerciales</h4>
+            <div class="wholesale-grid">
+              <div class="form-group">
+                <label for="cif">NIF / CIF</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🆔</span>
+                  <input type="text" id="cif" name="cif" value={user.cif || ''} required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="razon_social">Razón Social</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🏢</span>
+                  <input type="text" id="razon_social" name="razon_social" value={user.razon_social || ''} required />
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="direccion_fiscal">Dirección Fiscal</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">📍</span>
+                  <input type="text" id="direccion_fiscal" name="direccion_fiscal" value={user.direccion_fiscal || ''} required />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary-profile">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<style>
+  .user-profile-section {
+    max-width: 600px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+  }
+
+  .profile-card {
+    padding: 3rem 2.5rem;
+    border: 1px solid rgba(11, 19, 43, 0.08);
+    background: var(--color-glass);
+    border-radius: var(--radius-md);
+  }
+
+  .profile-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .avatar-badge {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    background: rgba(11, 19, 43, 0.04);
+    width: 72px;
+    height: 72px;
+    line-height: 72px;
+    border-radius: 50%;
+    text-align: center;
+    border: 1px solid var(--color-border);
+  }
+
+  .profile-card h3 {
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-family: var(--font-serif);
+  }
+
+  .profile-subtitle {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  .badge-minorista {
+    background: rgba(11, 19, 43, 0.06);
+    color: var(--color-secondary);
+  }
+
+  .badge-mayorista {
+    background: rgba(252, 211, 77, 0.2);
+    color: #b45309;
+    border: 1px solid rgba(252, 211, 77, 0.4);
+  }
+
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(188, 26, 34, 0.1);
+  }
+
+  .input-readonly {
+    background: rgba(241, 245, 249, 0.7);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    border-color: var(--color-border);
+  }
+
+  .input-readonly:focus {
+    box-shadow: none;
+    border-color: var(--color-border);
+    background: rgba(241, 245, 249, 0.7);
+  }
+
+  /* Wholesale section */
+  .wholesale-fields-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--color-border);
+    animation: slideDown 0.4s ease-out;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    margin-bottom: 1.25rem;
+    font-family: var(--font-serif);
+    position: relative;
+    padding-left: 0.75rem;
+  }
+
+  .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 2px;
+  }
+
+  .wholesale-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  .wholesale-grid .full-width {
+    grid-column: span 2;
+  }
+
+  .form-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-primary-profile {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.85rem 2rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(188, 26, 34, 0.15);
+  }
+
+  .btn-primary-profile:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(188, 26, 34, 0.25);
+  }
+
+  /* Alerts */
+  .alert-msg {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.15);
+    color: #065f46;
+  }
+
+  .alert-error {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.15);
+    color: #991b1b;
+  }
+
+  /* Animations */
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.97); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .animate-pop-in {
+    animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media (max-width: 600px) {
+    .wholesale-grid {
+      grid-template-columns: 1fr;
+    }
+    .wholesale-grid .full-width {
+      grid-column: span 1;
+    }
+    .profile-card {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
+

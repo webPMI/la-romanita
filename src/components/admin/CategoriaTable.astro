@@ -1,0 +1,124 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+
+// Obtener categorías únicas consultando los productos existentes
+const { data: productsData, error } = await supabase
+  .from('products')
+  .select('category');
+
+const categoriesList = Array.from(
+  new Set((productsData || []).map(p => p.category).filter(Boolean))
+);
+---
+<section class="categoria-table-section">
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre de Categoría</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {categoriesList.length === 0 ? (
+          <tr>
+            <td colspan="4" class="text-center text-muted">No se encontraron categorías activas. Agregue un producto con una nueva categoría para verla reflejada aquí.</td>
+          </tr>
+        ) : (
+          categoriesList.map((cat, index) => (
+            <tr>
+              <td>{index + 1}</td>
+              <td class="font-bold">{cat}</td>
+              <td><span class="text-muted">Categoría asignada a productos en catálogo</span></td>
+              <td>
+                <span class="manage-info">Gestionable desde la edición de cada Producto</span>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .categoria-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .table-actions h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: var(--secondary);
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .manage-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    background: rgba(11, 19, 43, 0.04);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+  }
+</style>

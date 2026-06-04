@@ -1,0 +1,249 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+import HorarioForm from './HorarioForm.astro';
+
+// Instanciar el cliente del servidor seguro para evitar bloqueos globales en Cloudflare
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+
+const { data: horariosData, error } = await supabase
+  .from('horarios')
+  .select('id, dia_semana, hora_apertura, hora_cierre, is_active')
+  .order('dia_semana', { ascending: true })
+  .limit(50);
+
+const horarios = horariosData || [];
+---
+<section class="horario-table-section">
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Día de la Semana</th>
+          <th>Apertura</th>
+          <th>Cierre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {horarios.length === 0 ? (
+          <tr>
+            <td colspan="5" class="text-center text-muted">No hay horarios configurados en el sistema.</td>
+          </tr>
+        ) : (
+          horarios.map(horario => (
+            <tr>
+              <td class="font-bold">{horario.dia_semana}</td>
+              <td>{horario.hora_apertura}</td>
+              <td>{horario.hora_cierre}</td>
+              <td>
+                <span class={`status-dot ${horario.is_active ? 'status-active' : 'status-inactive'}`}></span>
+                {horario.is_active ? 'Abierto' : 'Cerrado'}
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button 
+                    class="btn-secondary btn-xs btn-edit-horario" 
+                    data-id={horario.id}
+                    data-dia-semana={horario.dia_semana}
+                    data-hora-apertura={horario.hora_apertura}
+                    data-hora-cierre={horario.hora_cierre}
+                    data-is-active={String(horario.is_active)}
+                  >
+                    ✏ Editar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Contenedor del Modal Formulario (Inicialmente Oculto) -->
+  <div class="modal-overlay" id="horario-modal-container">
+    <HorarioForm />
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    const modalContainer = document.getElementById('horario-modal-container');
+    const closeBtn = document.getElementById('close-horario-modal-btn');
+    const cancelBtn = document.getElementById('btn-cancel-horario');
+    const formElement = document.getElementById('horario-form-element');
+
+    const idInput = document.getElementById('horario-id') as HTMLInputElement;
+    const diaInput = document.getElementById('horario-dia') as HTMLInputElement;
+    const aperturaInput = document.getElementById('horario-apertura') as HTMLInputElement;
+    const cierreInput = document.getElementById('horario-cierre') as HTMLInputElement;
+    const activeCheck = document.getElementById('horario-active') as HTMLInputElement;
+
+    function openModal() {
+      if (modalContainer) modalContainer.classList.add('show');
+    }
+
+    function closeModal() {
+      if (modalContainer) modalContainer.classList.remove('show');
+    }
+
+    // Botones Editar
+    document.querySelectorAll('.btn-edit-horario').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const dia = btn.getAttribute('data-dia-semana');
+        const apertura = btn.getAttribute('data-hora-apertura');
+        const cierre = btn.getAttribute('data-hora-cierre');
+        const isActive = btn.getAttribute('data-is-active') === 'true';
+
+        if (idInput) idInput.value = id || '';
+        if (diaInput) diaInput.value = dia || '';
+        if (aperturaInput) aperturaInput.value = apertura || '';
+        if (cierreInput) cierreInput.value = cierre || '';
+        if (activeCheck) activeCheck.checked = isActive;
+
+        openModal();
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modalContainer) {
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+      });
+    }
+
+    if (formElement) {
+      formElement.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = idInput.value;
+        const hora_apertura = aperturaInput.value;
+        const hora_cierre = cierreInput.value;
+        const is_active = activeCheck.checked;
+
+        try {
+          const res = await fetch(`${base}/api/admin/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'horarios',
+              data: { id, hora_apertura, hora_cierre, is_active }
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal();
+            window.location.reload();
+          } else {
+            alert('Error al actualizar horario: ' + (data.error || 'Desconocido'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error de conexión con el servidor.');
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .horario-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .table-actions h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: var(--secondary);
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.4rem;
+  }
+
+  .status-active {
+    background-color: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+
+  .status-inactive {
+    background-color: #a0aec0;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-xs {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+</style>

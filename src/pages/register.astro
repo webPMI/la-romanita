@@ -1,0 +1,850 @@
+---
+import Layout from "../layouts/Layout.astro";
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title="Registro">
+  <div class="register-page-wrapper">
+    <!-- Abstract background glow elements -->
+    <div class="glow glow-primary"></div>
+    <div class="glow glow-secondary"></div>
+
+    <div class="container register-container animate-fade-in">
+      <div class="register-card glass-panel">
+        <div class="register-header">
+          <div class="logo-badge">🍝</div>
+          <h2>Crea tu cuenta</h2>
+          <p>Regístrate para realizar pedidos y guardar tu historial.</p>
+        </div>
+
+        <form class="register-form" id="registerForm" autocomplete="on">
+          <div class="form-group">
+            <label for="name">Nombre</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input
+                type="text"
+                id="name"
+                placeholder="Nombre"
+                required
+                autocomplete="given-name"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="surname">Apellido</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input
+                type="text"
+                id="surname"
+                placeholder="Apellido"
+                required
+                autocomplete="family-name"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Correo Electrónico</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉️</span>
+              <input
+                type="email"
+                id="email"
+                placeholder="tu@email.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phone">Teléfono</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📱</span>
+              <input
+                type="tel"
+                id="phone"
+                placeholder="+34 600 000 000"
+                required
+                autocomplete="tel"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                placeholder="Mínimo 6 caracteres"
+                required
+                minlength="6"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                id="togglePassword"
+                tabindex="-1"
+                style="position:absolute;right:1rem;background:none;border:none;cursor:pointer;"
+                >👁️</button
+              >
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirmar Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Repite tu contraseña"
+                required
+                minlength="6"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                id="toggleConfirmPassword"
+                tabindex="-1"
+                style="position:absolute;right:1rem;background:none;border:none;cursor:pointer;"
+                >👁️</button
+              >
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="clientType">Tipo de Cliente</label>
+            <div class="input-wrapper select-wrapper">
+              <span class="input-icon">💼</span>
+              <select id="clientType" class="select-custom" required>
+                <option value="minorista" selected>Cliente Minorista (Particular)</option>
+                <option value="mayorista">Cliente Mayorista (Empresa / Distribuidor)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Campos comerciales para mayoristas con animación suave -->
+          <div id="commercialFieldsContainer" class="collapsible-container">
+            <div class="collapsible-content">
+              <div class="form-group">
+                <label for="cif">NIF / CIF</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🆔</span>
+                  <input
+                    type="text"
+                    id="cif"
+                    placeholder="Ej. B12345678"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="razonSocial">Razón Social</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">🏢</span>
+                  <input
+                    type="text"
+                    id="razonSocial"
+                    placeholder="Ej. La Romanita Distribuciones S.L."
+                    autocomplete="organization"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="direccionFiscal">Dirección Fiscal</label>
+                <div class="input-wrapper">
+                  <span class="input-icon">📍</span>
+                  <input
+                    type="text"
+                    id="direccionFiscal"
+                    placeholder="Ej. Calle Mayor 123, Madrid"
+                    autocomplete="street-address"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="form-group"
+            style="display:flex;align-items:center;gap:0.5rem;"
+          >
+            <input
+              type="checkbox"
+              id="acceptPolicies"
+              required
+              style="width:auto;"
+            />
+            <label for="acceptPolicies" style="margin:0;"
+              >Acepto las <a href={`${base}politicas`} target="_blank"
+                >políticas de privacidad</a
+              ></label
+            >
+          </div>
+          <button type="submit" class="btn-primary full-width" id="submitBtn">
+            <span class="btn-text">Registrarse</span>
+            <span class="spinner hide"></span>
+          </button>
+          <button
+            type="button"
+            id="autofillBtn"
+            style="margin-top:0.5rem;width:100%;background:#eee;color:#333;border-radius:8px;border:none;padding:0.5rem 0;"
+            >Autocompletar (dev)</button
+          >
+        </form>
+
+        <div class="register-footer">
+          <p>
+            ¿Ya tienes cuenta? <a href={`${base}login`} class="highlight"
+              >Inicia Sesión</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+</Layout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const registerForm = document.getElementById(
+      "registerForm",
+    ) as HTMLFormElement | null;
+
+    const nameInput = document.getElementById("name") as HTMLInputElement;
+    const surnameInput = document.getElementById("surname") as HTMLInputElement;
+    const emailInput = document.getElementById("email") as HTMLInputElement;
+    const phoneInput = document.getElementById("phone") as HTMLInputElement;
+    const passwordInput = document.getElementById(
+      "password",
+    ) as HTMLInputElement;
+    const confirmPasswordInput = document.getElementById(
+      "confirmPassword",
+    ) as HTMLInputElement;
+    const clientTypeSelect = document.getElementById("clientType") as HTMLSelectElement;
+    const commercialFieldsContainer = document.getElementById("commercialFieldsContainer") as HTMLDivElement;
+    const cifInput = document.getElementById("cif") as HTMLInputElement;
+    const razonSocialInput = document.getElementById("razonSocial") as HTMLInputElement;
+    const direccionFiscalInput = document.getElementById("direccionFiscal") as HTMLInputElement;
+    
+    const acceptPolicies = document.getElementById(
+      "acceptPolicies",
+    ) as HTMLInputElement;
+    const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
+    const autofillBtn = document.getElementById(
+      "autofillBtn",
+    ) as HTMLButtonElement;
+    const btnText = submitBtn?.querySelector(".btn-text");
+    const spinner = submitBtn?.querySelector(".spinner");
+    const registerCard = document.querySelector(".register-card");
+    const toastContainer = document.getElementById("toastContainer");
+
+    const base = window.location.pathname.startsWith("/la-romanita")
+      ? "/la-romanita"
+      : "";
+
+    function filterErrorMessage(msg: string | null) {
+      if (!msg) return 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.';
+      const rawMsg = msg.toLowerCase();
+      
+      if (rawMsg.includes('invalid login credentials') || rawMsg.includes('invalid claim') || rawMsg.includes('invalid client_id')) {
+        return 'El correo electrónico o la contraseña no son correctos. Por favor, compruébalos.';
+      }
+      if (rawMsg.includes('email not confirmed') || rawMsg.includes('email_not_confirmed')) {
+        return 'Tu correo electrónico aún no ha sido verificado. Por favor, revisa tu bandeja de entrada.';
+      }
+      if (rawMsg.includes('user already exists') || rawMsg.includes('user_already_exists') || rawMsg.includes('already registered')) {
+        return 'Ya existe una cuenta registrada con este correo electrónico. Intenta iniciar sesión.';
+      }
+      if (rawMsg.includes('password should be') || rawMsg.includes('password is too short') || rawMsg.includes('weak password')) {
+        return 'La contraseña es demasiado débil o corta. Debe tener al menos 6 caracteres.';
+      }
+      if (rawMsg.includes('signup disabled') || rawMsg.includes('signups_not_allowed')) {
+        return 'El registro de nuevos usuarios está temporalmente deshabilitado.';
+      }
+      if (rawMsg.includes('network error') || rawMsg.includes('failed to fetch') || rawMsg.includes('network_error') || rawMsg.includes('connect')) {
+        return 'No se pudo conectar con el servidor. Por favor, comprueba tu conexión a Internet.';
+      }
+      if (rawMsg.includes('rate limit') || rawMsg.includes('too many requests') || rawMsg.includes('over_query_limit')) {
+        return 'Has realizado demasiados intentos en poco tiempo. Por favor, espera unos minutos antes de volver a intentarlo.';
+      }
+      if (rawMsg.includes('captcha') || rawMsg.includes('bot')) {
+        return 'Error de verificación de seguridad (CAPTCHA). Por favor, inténtalo de nuevo.';
+      }
+      if (rawMsg.includes('invalid email') || rawMsg.includes('email address is invalid')) {
+        return 'Por favor, introduce un correo electrónico válido.';
+      }
+      if (rawMsg.includes('exception') || rawMsg.includes('database') || rawMsg.includes('query') || rawMsg.includes('sql') || rawMsg.includes('null value') || rawMsg.includes('column') || rawMsg.includes('foreign key')) {
+        return 'Ocurrió un problema técnico al procesar la solicitud. Por favor, contacta con soporte.';
+      }
+      return msg;
+    }
+
+    function showToast(message: string, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${type === "success" ? "✅" : "❌"}</span>
+        <span class="toast-message">${message}</span>
+      `;
+      toastContainer?.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.add("show");
+      });
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Toggle fields for client type with animation
+    function handleClientTypeChange() {
+      const isMayorista = clientTypeSelect.value === "mayorista";
+      if (isMayorista) {
+        commercialFieldsContainer.classList.add("open");
+        cifInput.required = true;
+        razonSocialInput.required = true;
+        direccionFiscalInput.required = true;
+      } else {
+        commercialFieldsContainer.classList.remove("open");
+        cifInput.required = false;
+        razonSocialInput.required = false;
+        direccionFiscalInput.required = false;
+        // Optional: clear values when switching back
+        cifInput.value = "";
+        razonSocialInput.value = "";
+        direccionFiscalInput.value = "";
+      }
+    }
+
+    clientTypeSelect?.addEventListener("change", handleClientTypeChange);
+
+    // Mostrar/ocultar contraseña
+    document.getElementById("togglePassword")?.addEventListener("click", () => {
+      passwordInput.type =
+        passwordInput.type === "password" ? "text" : "password";
+    });
+    document
+      .getElementById("toggleConfirmPassword")
+      ?.addEventListener("click", () => {
+        confirmPasswordInput.type =
+          confirmPasswordInput.type === "password" ? "text" : "password";
+      });
+
+    // Autocompletar rápido para pruebas/dev
+    autofillBtn?.addEventListener("click", () => {
+      nameInput.value = "Juan";
+      surnameInput.value = "Pérez";
+      emailInput.value = `cliente${Math.floor(Math.random() * 10000)}@ejemplo.com`;
+      phoneInput.value = "+34 600 000 000";
+      passwordInput.value = "123456";
+      confirmPasswordInput.value = "123456";
+      acceptPolicies.checked = true;
+
+      // Handle mayorista autofill dynamically if chosen
+      if (clientTypeSelect.value === "mayorista") {
+        cifInput.value = "B12345678";
+        razonSocialInput.value = "Distribuciones Romanita S.L.";
+        direccionFiscalInput.value = "Calle de la Pasta 45, Barcelona";
+      }
+    });
+
+    registerForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const surname = surnameInput.value.trim();
+      const email = emailInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      const client_type = clientTypeSelect.value;
+      const cif = cifInput.value.trim();
+      const company_name = razonSocialInput.value.trim();
+      const fiscal_address = direccionFiscalInput.value.trim();
+      const accepted = acceptPolicies.checked;
+
+      // Validaciones
+      if (!accepted) {
+        showToast("Debes aceptar las políticas de privacidad.", "error");
+        registerCard?.classList.add("shake-error");
+        setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast("Las contraseñas no coinciden.", "error");
+        registerCard?.classList.add("shake-error");
+        setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+        return;
+      }
+      if (password.length < 6) {
+        showToast("La contraseña debe tener al menos 6 caracteres.", "error");
+        registerCard?.classList.add("shake-error");
+        setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+        return;
+      }
+
+      // Validaciones comerciales
+      if (client_type === "mayorista") {
+        if (!cif) {
+          showToast("El CIF/NIF es obligatorio para mayoristas.", "error");
+          cifInput.focus();
+          registerCard?.classList.add("shake-error");
+          setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+          return;
+        }
+        if (!company_name) {
+          showToast("La Razón Social es obligatoria para mayoristas.", "error");
+          razonSocialInput.focus();
+          registerCard?.classList.add("shake-error");
+          setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+          return;
+        }
+        if (!fiscal_address) {
+          showToast("La Dirección Fiscal es obligatoria para mayoristas.", "error");
+          direccionFiscalInput.focus();
+          registerCard?.classList.add("shake-error");
+          setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+          return;
+        }
+      }
+
+      // Estado de carga
+      submitBtn.disabled = true;
+      nameInput.disabled = true;
+      surnameInput.disabled = true;
+      emailInput.disabled = true;
+      phoneInput.disabled = true;
+      passwordInput.disabled = true;
+      confirmPasswordInput.disabled = true;
+      acceptPolicies.disabled = true;
+      clientTypeSelect.disabled = true;
+      cifInput.disabled = true;
+      razonSocialInput.disabled = true;
+      direccionFiscalInput.disabled = true;
+      btnText?.classList.add("hide");
+      spinner?.classList.remove("hide");
+
+      try {
+        const response = await fetch(`${base}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            surname,
+            email,
+            phone,
+            password,
+            client_type,
+            cif,
+            company_name,
+            fiscal_address,
+          }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          showToast("Cuenta creada con éxito. Redirigiendo...", "success");
+          setTimeout(() => {
+            window.location.replace(`${base}/login`);
+          }, 900);
+        } else {
+          showToast(
+            filterErrorMessage(data.error || "Ocurrió un error al procesar el registro."),
+            "error",
+          );
+          resetFormState();
+        }
+      } catch (err: any) {
+        console.error("Error durante el registro:", err);
+        showToast(filterErrorMessage(err?.message || "network_error"), "error");
+        resetFormState();
+      }
+    });
+
+    function resetFormState() {
+      submitBtn.disabled = false;
+      nameInput.disabled = false;
+      surnameInput.disabled = false;
+      emailInput.disabled = false;
+      phoneInput.disabled = false;
+      passwordInput.disabled = false;
+      confirmPasswordInput.disabled = false;
+      acceptPolicies.disabled = false;
+      clientTypeSelect.disabled = false;
+      cifInput.disabled = false;
+      razonSocialInput.disabled = false;
+      direccionFiscalInput.disabled = false;
+      btnText?.classList.remove("hide");
+      spinner?.classList.add("hide");
+      registerCard?.classList.add("shake-error");
+      setTimeout(() => registerCard?.classList.remove("shake-error"), 500);
+    }
+  });
+</script>
+
+<style>
+  .register-page-wrapper {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 3rem 1.5rem;
+  }
+
+  /* Glow effects */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.12;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .glow-primary {
+    top: 20%;
+    left: 20%;
+    width: 450px;
+    height: 450px;
+    background: var(--color-primary);
+  }
+
+  .glow-secondary {
+    bottom: 20%;
+    right: 20%;
+    width: 450px;
+    height: 450px;
+    background: var(--color-secondary);
+  }
+
+  .register-container {
+    position: relative;
+    z-index: 5;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  .register-card {
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid rgba(11, 19, 43, 0.08);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .register-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(11, 19, 43, 0.08);
+  }
+
+  .register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .logo-badge {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    background: rgba(188, 26, 34, 0.1);
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+    border-radius: 50%;
+    text-align: center;
+  }
+
+  .register-card h2 {
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-family: var(--font-serif);
+  }
+
+  .register-card p {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(188, 26, 34, 0.1);
+  }
+
+  input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  select.select-custom {
+    width: 100%;
+    padding: 0.85rem 2.5rem 0.85rem 2.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+  }
+
+  select.select-custom:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(188, 26, 34, 0.1);
+  }
+
+  .select-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .select-wrapper::after {
+    content: "▾";
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: color 0.3s ease;
+  }
+
+  .select-wrapper:focus-within::after {
+    color: var(--color-primary);
+  }
+
+  /* Collapsible Container for Commercial Fields */
+  .collapsible-container {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                margin-top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    margin-top: 0;
+  }
+
+  .collapsible-container.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+    margin-top: 1.25rem;
+  }
+
+  .collapsible-content {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transform: translateY(-15px);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .collapsible-container.open .collapsible-content {
+    transform: translateY(0);
+  }
+
+  .full-width {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 3rem;
+  }
+
+  .btn-text {
+    transition: opacity 0.2s;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s ease-in-out infinite;
+  }
+
+  .hide {
+    display: none !important;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .register-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  .highlight {
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+
+  .highlight:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+
+  /* Shake Error */
+  .shake-error {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+
+  /* Toast Notification */
+  .toast-container {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-border, #e2e8f0);
+    transform: translateY(100px) scale(0.9);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+    pointer-events: auto;
+    width: max-content;
+    max-width: 90vw;
+  }
+
+  .toast.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .toast-success {
+    border-left: 5px solid #10b981;
+  }
+
+  .toast-error {
+    border-left: 5px solid var(--color-primary, #bc1a22);
+  }
+
+  .toast-icon {
+    font-size: 1.25rem;
+  }
+
+  .toast-message {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-main, #333);
+  }
+
+  @media (max-width: 768px) {
+    .register-card {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
+

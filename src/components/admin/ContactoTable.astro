@@ -1,0 +1,228 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+import ContactoForm from './ContactoForm.astro';
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+const { data: contactosData, error } = await supabase
+  .from('contacto')
+  .select('id, tipo, valor, descripcion')
+  .order('tipo', { ascending: true })
+  .limit(50);
+
+const contactos = contactosData || [];
+---
+<section class="contacto-table-section">
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo de Información</th>
+          <th>Valor Configurado</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {contactos.length === 0 ? (
+          <tr>
+            <td colspan="4" class="text-center text-muted">No hay datos de contacto configurados.</td>
+          </tr>
+        ) : (
+          contactos.map(contacto => (
+            <tr>
+              <td class="font-bold text-capitalize">{contacto.tipo}</td>
+              <td class="font-semibold">{contacto.valor}</td>
+              <td class="text-muted">{contacto.descripcion || '-'}</td>
+              <td>
+                <div class="row-actions">
+                  <button 
+                    class="btn-secondary btn-xs btn-edit-contacto" 
+                    data-id={contacto.id}
+                    data-tipo={contacto.tipo}
+                    data-valor={contacto.valor}
+                    data-descripcion={contacto.descripcion || ''}
+                  >
+                    ✏ Editar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Contenedor del Modal Formulario (Inicialmente Oculto) -->
+  <div class="modal-overlay" id="contacto-modal-container">
+    <ContactoForm />
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    const modalContainer = document.getElementById('contacto-modal-container');
+    const closeBtn = document.getElementById('close-contacto-modal-btn');
+    const cancelBtn = document.getElementById('btn-cancel-contacto');
+    const formElement = document.getElementById('contacto-form-element');
+
+    const idInput = document.getElementById('contacto-id') as HTMLInputElement;
+    const tipoInput = document.getElementById('contacto-tipo') as HTMLInputElement;
+    const valorInput = document.getElementById('contacto-valor') as HTMLInputElement;
+    const descInput = document.getElementById('contacto-descripcion') as HTMLInputElement;
+
+    function openModal() {
+      if (modalContainer) modalContainer.classList.add('show');
+    }
+
+    function closeModal() {
+      if (modalContainer) modalContainer.classList.remove('show');
+    }
+
+    // Botones Editar
+    document.querySelectorAll('.btn-edit-contacto').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const tipo = btn.getAttribute('data-tipo');
+        const valor = btn.getAttribute('data-valor');
+        const desc = btn.getAttribute('data-descripcion');
+
+        if (idInput) idInput.value = id || '';
+        if (tipoInput) tipoInput.value = tipo || '';
+        if (valorInput) valorInput.value = valor || '';
+        if (descInput) descInput.value = desc || '';
+
+        openModal();
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modalContainer) {
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+      });
+    }
+
+    if (formElement) {
+      formElement.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = idInput.value;
+        const valor = valorInput.value.trim();
+        const descripcion = descInput.value.trim();
+
+        if (!valor) {
+          alert('El valor es requerido.');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${base}/api/admin/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'contacto',
+              data: { id, valor, descripcion }
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal();
+            window.location.reload();
+          } else {
+            alert('Error al actualizar contacto: ' + (data.error || 'Desconocido'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error de conexión con el servidor.');
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .contacto-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .font-semibold {
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .text-capitalize {
+    text-transform: capitalize;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-xs {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+</style>

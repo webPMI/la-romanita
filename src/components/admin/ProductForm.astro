@@ -1,0 +1,185 @@
+---
+// Formulario para crear o editar producto (Diseñado como Modal Card)
+const { producto = null } = Astro.props;
+---
+<div class="modal-card glass-panel animate-fade-in">
+  <div class="modal-header">
+    <h3>{producto ? 'Editar Producto' : 'Nuevo Producto'}</h3>
+    <button type="button" class="close-btn" id="close-product-modal-btn">✕</button>
+  </div>
+  
+  <form class="product-form" id="product-form-element">
+    <input type="hidden" name="id" id="prod-id" value={producto?.id || ''} />
+    
+    <div class="form-group">
+      <label for="prod-name">Nombre</label>
+      <input type="text" name="name" id="prod-name" value={producto?.name || ''} required placeholder="Ej. Empanada de Carne" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="prod-category">Categoría</label>
+        <input type="text" name="category" id="prod-category" value={producto?.category || ''} required placeholder="Ej. Empanadas, Pastas" />
+      </div>
+      <div class="form-group">
+        <label for="prod-image">URL de Imagen</label>
+        <input type="text" name="image_url" id="prod-image" value={producto?.image_url || ''} placeholder="https://..." />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="prod-price-minorista">Precio Minorista (€)</label>
+        <input type="number" name="price_minorista" id="prod-price-minorista" step="0.01" min="0" value={producto?.price_minorista || ''} required placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label for="prod-price-mayorista">Precio Mayorista (€)</label>
+        <input type="number" name="price_mayorista" id="prod-price-mayorista" step="0.01" min="0" value={producto?.price_mayorista || ''} required placeholder="0.00" />
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <label class="checkbox-label">
+        <input type="checkbox" name="is_offer" id="prod-is-offer" checked={producto?.is_offer || false} />
+        <span>¿Está en Oferta?</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="is_active" id="prod-is-active" checked={producto?.is_active !== false} />
+        <span>Producto Activo</span>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" id="btn-cancel-product">Cancelar</button>
+      <button type="submit" class="btn-primary" id="btn-submit-product">{producto ? 'Guardar Cambios' : 'Crear Producto'}</button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .modal-card {
+    width: 100%;
+    max-width: 550px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+    color: var(--secondary);
+    font-family: var(--font-sans);
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover {
+    color: var(--primary);
+  }
+
+  .product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  input[type="text"], input[type="number"] {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.8);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(188, 26, 34, 0.15);
+  }
+
+  .checkbox-row {
+    display: flex;
+    gap: 2rem;
+    margin: 0.5rem 0;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    user-select: none;
+  }
+
+  .checkbox-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.25rem;
+  }
+
+  .form-actions button {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 576px) {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    .checkbox-row {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  }
+</style>

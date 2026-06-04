@@ -1,0 +1,231 @@
+---
+interface Props {
+  user: any;
+}
+
+const { user } = Astro.props;
+const base = import.meta.env.BASE_URL || '/';
+
+const name = user?.name || 'Cliente';
+const email = user?.email || '';
+const isMayorista = user?.client_type === 'mayorista';
+---
+
+<section class="user-dashboard-section animate-fade-in">
+  <div class="dashboard-container">
+    <!-- Welcome Panel -->
+    <div class="welcome-card glass-panel">
+      <div class="welcome-badge">👋</div>
+      <div class="welcome-text">
+        <h2>¡Hola, {name}!</h2>
+        <p class="user-email">{email}</p>
+        <div class="badge-row">
+          {isMayorista ? (
+            <span class="badge badge-mayorista">Tarifa Mayorista 💼</span>
+          ) : (
+            <span class="badge badge-minorista">Tarifa Estándar 👤</span>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Grid -->
+    <div class="dashboard-grid">
+      <a href={`${base}menu`} class="dashboard-action-card glass-panel">
+        <div class="card-icon">🍝</div>
+        <div class="card-body">
+          <h4>Explorar Menú</h4>
+          <p>Mira nuestra oferta diaria y haz un pedido rápido para recoger.</p>
+        </div>
+        <div class="card-arrow">➔</div>
+      </a>
+
+      <a href={`${base}user/pedidos`} class="dashboard-action-card glass-panel">
+        <div class="card-icon">📦</div>
+        <div class="card-body">
+          <h4>Mis Pedidos</h4>
+          <p>Consulta el historial y estado en tiempo real de tus pedidos.</p>
+        </div>
+        <div class="card-arrow">➔</div>
+      </a>
+
+      <a href={`${base}user/perfil`} class="dashboard-action-card glass-panel">
+        <div class="card-icon">⚙️</div>
+        <div class="card-body">
+          <h4>Mi Perfil</h4>
+          <p>Actualiza tus datos de contacto y facturación.</p>
+        </div>
+        <div class="card-arrow">➔</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .user-dashboard-section {
+    max-width: 800px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* Welcome Card styling */
+  .welcome-card {
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    border: 1px solid rgba(11, 19, 43, 0.08);
+    background: var(--color-glass);
+    border-radius: var(--radius-md);
+  }
+
+  .welcome-badge {
+    font-size: 3rem;
+    background: rgba(11, 19, 43, 0.04);
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    text-align: center;
+    border: 1px solid var(--color-border);
+  }
+
+  .welcome-text h2 {
+    color: var(--color-secondary);
+    margin-bottom: 0.25rem;
+    font-size: 1.8rem;
+    font-family: var(--font-serif);
+  }
+
+  .user-email {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.3rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-minorista {
+    background: rgba(11, 19, 43, 0.06);
+    color: var(--color-secondary);
+  }
+
+  .badge-mayorista {
+    background: rgba(252, 211, 77, 0.2);
+    color: #b45309;
+    border: 1px solid rgba(252, 211, 77, 0.4);
+  }
+
+  /* Action Grid styling */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .dashboard-action-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    border: 1px solid rgba(11, 19, 43, 0.08);
+    background: var(--color-glass);
+    border-radius: var(--radius-md);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-action-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-primary);
+    box-shadow: 0 10px 25px rgba(188, 26, 34, 0.06);
+  }
+
+  .card-icon {
+    font-size: 2.2rem;
+    width: 60px;
+    height: 60px;
+    background: rgba(188, 26, 34, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+  }
+
+  .dashboard-action-card:hover .card-icon {
+    background: rgba(188, 26, 34, 0.1);
+  }
+
+  .card-body {
+    flex-grow: 1;
+  }
+
+  .card-body h4 {
+    margin: 0 0 0.4rem 0;
+    font-size: 1.2rem;
+    color: var(--color-secondary);
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  .card-body p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
+  .card-arrow {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  .dashboard-action-card:hover .card-arrow {
+    transform: translateX(5px);
+    color: var(--color-primary);
+  }
+
+  @media (max-width: 600px) {
+    .welcome-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+    .welcome-badge {
+      margin-bottom: 0.5rem;
+    }
+    .badge-row {
+      justify-content: center;
+    }
+    .dashboard-action-card {
+      padding: 1.5rem;
+      flex-direction: column;
+      text-align: center;
+    }
+    .card-arrow {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+import Layout from './Layout.astro';
+import { getUserFromSession } from '../lib/auth';
+import AdminNav from '../components/admin/AdminNav.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+// Validar la sesión del administrador del lado del servidor (SSR)
+const user = await getUserFromSession(Astro.cookies);
+if (!user || user.role !== 'admin') {
+  return Astro.redirect(`${base}login`);
+}
+---
+
+<Layout title={title}>
+  <div class="admin-layout container animate-fade-in ready">
+    <!-- Componente centralizado de navegación del Administrador -->
+    <AdminNav />
+
+    <div class="admin-content">
+      <header class="admin-header">
+        <div class="admin-header-title">
+          <h1>{title}</h1>
+          <p class="admin-welcome-msg">Panel de administración · <span class="highlight-name">{user.name}</span></p>
+        </div>
+      </header>
+
+      <slot />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2.5rem;
+    padding: 2.5rem 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .admin-layout.ready {
+    opacity: 1;
+  }
+
+  .admin-content {
+    flex-grow: 1;
+    min-width: 0; /* Evita desbordamiento de tablas responsivas */
+  }
+
+  .admin-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+  }
+
+  .admin-header-title h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.25rem;
+    color: var(--secondary);
+    font-family: var(--font-serif);
+  }
+
+  .admin-welcome-msg {
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  .highlight-name {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Responsivo para móviles */
+  @media (max-width: 768px) {
+    .admin-layout {
+      grid-template-columns: 1fr;
+      padding: 1.5rem 0 90px 0;
+      gap: 1.5rem;
+    }
+    .admin-header-title h1 {
+      font-size: 1.8rem;
+    }
+  }
+
+  /* Ocultar botón de WhatsApp en el panel de admin */
+  :global(.whatsapp-float) {
+    display: none !important;
+  }
+</style>

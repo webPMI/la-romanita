@@ -1,0 +1,93 @@
+---
+// Hero section for homepage
+---
+<section class="hero">
+  <div class="container hero-content animate-fade-in">
+    <div class="badge">Desde 1988 en Palma</div>
+    <h1>Auténtica Pasta Fresca <br/> <span class="highlight">y Tradición Italo-Argentina</span></h1>
+    <p class="subtitle">Más de 30 años apasionándonos por la pasta, cualidades de cocción perfectas y un sabor equilibrado. Tradición & maestría en cada bocado.</p>
+    <div class="hero-actions">
+      <a href="/menu" class="btn-primary">Ver Menú Completo</a>
+      <a href="#historia" class="btn-secondary">Nuestra Historia</a>
+    </div>
+  </div>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 4rem 0;
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.25rem var(--space-sm);
+    border-radius: 999px;
+    background: rgba(217, 119, 6, 0.1);
+    color: var(--color-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+  }
+  
+  h1 {
+    font-size: clamp(3rem, 5vw, 5rem);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  
+  .highlight {
+    color: var(--color-primary);
+    font-style: italic;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+  }
+  
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 2rem;
+  }
+  
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 1;
+    opacity: 0.15;
+  }
+  
+  .glow-1 {
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: var(--color-primary);
+  }
+  
+  .glow-2 {
+    bottom: 10%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: var(--color-secondary);
+  }
+</style>

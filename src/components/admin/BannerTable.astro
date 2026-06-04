@@ -1,0 +1,293 @@
+---
+import { getSupabaseServerClient } from '../../lib/supabase';
+import { getSessionTokens } from '../../lib/auth';
+import BannerForm from './BannerForm.astro';
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+const { data: bannersData, error } = await supabase
+  .from('banners')
+  .select('id, titulo, mensaje, is_active')
+  .order('titulo', { ascending: true })
+  .limit(50);
+
+const banners = bannersData || [];
+---
+<section class="banner-table-section">
+
+  {error && <div class="error-banner">⚠ Error al conectar con Supabase: {error.message}</div>}
+
+  <div class="table-container glass-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Mensaje / Promoción</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {banners.length === 0 ? (
+          <tr>
+            <td colspan="5" class="text-center text-muted">No hay banners promocionales configurados.</td>
+          </tr>
+        ) : (
+          banners.map(banner => (
+            <tr>
+              <td class="font-semibold">#{banner.id ? banner.id.slice(0, 8) : ''}</td>
+              <td class="font-bold">{banner.titulo || '-'}</td>
+              <td>{banner.mensaje}</td>
+              <td>
+                <span class={`status-dot ${banner.is_active ? 'status-active' : 'status-inactive'}`}></span>
+                {banner.is_active ? 'Activo' : 'Inactivo'}
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button 
+                    class="btn-secondary btn-xs btn-edit-banner"
+                    data-id={banner.id}
+                    data-titulo={banner.titulo || ''}
+                    data-mensaje={banner.mensaje}
+                    data-is-active={String(banner.is_active)}
+                  >
+                    ✏ Editar
+                  </button>
+                  <button class="btn-danger btn-xs btn-delete-banner" data-id={banner.id}>
+                    🗑 Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Contenedor del Modal Formulario (Inicialmente Oculto) -->
+  <div class="modal-overlay" id="banner-modal-container">
+    <BannerForm />
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    const modalContainer = document.getElementById('banner-modal-container');
+    const closeBtn = document.getElementById('close-banner-modal-btn');
+    const cancelBtn = document.getElementById('btn-cancel-banner');
+    const formElement = document.getElementById('banner-form-element');
+
+    const idInput = document.getElementById('banner-id') as HTMLInputElement;
+    const tituloInput = document.getElementById('banner-titulo') as HTMLInputElement;
+    const mensajeInput = document.getElementById('banner-mensaje') as HTMLInputElement;
+    const activeCheck = document.getElementById('banner-active') as HTMLInputElement;
+
+    function openModal() {
+      if (modalContainer) modalContainer.classList.add('show');
+    }
+
+    function closeModal() {
+      if (modalContainer) modalContainer.classList.remove('show');
+    }
+
+    // Botones Editar
+    document.querySelectorAll('.btn-edit-banner').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const titulo = btn.getAttribute('data-titulo');
+        const mensaje = btn.getAttribute('data-mensaje');
+        const isActive = btn.getAttribute('data-is-active') === 'true';
+
+        if (idInput) idInput.value = id || '';
+        if (tituloInput) tituloInput.value = titulo || '';
+        if (mensajeInput) mensajeInput.value = mensaje || '';
+        if (activeCheck) activeCheck.checked = isActive;
+
+        openModal();
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (modalContainer) {
+      modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) closeModal();
+      });
+    }
+
+    // Guardar cambios (POST)
+    if (formElement) {
+      formElement.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = idInput.value;
+        const titulo = tituloInput.value.trim();
+        const mensaje = mensajeInput.value.trim();
+        const is_active = activeCheck.checked;
+
+        if (!mensaje) {
+          alert('El mensaje es requerido.');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${base}/api/admin/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'banners',
+              data: { id, titulo, mensaje, is_active }
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            closeModal();
+            window.location.reload();
+          } else {
+            alert('Error al actualizar banner: ' + (data.error || 'Desconocido'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error de conexión con el servidor.');
+        }
+      });
+    }
+
+    // Eliminar (DELETE)
+    document.querySelectorAll('.btn-delete-banner').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        if (confirm(`¿Estás seguro de que deseas eliminar el banner #${id.slice(0, 8)}?`)) {
+          try {
+            const res = await fetch(`${base}/api/admin/config`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'banners', id })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              window.location.reload();
+            } else {
+              alert('Error al eliminar el banner: ' + (data.error || 'Desconocido'));
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Error de conexión con el servidor.');
+          }
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .banner-table-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .error-banner {
+    background: rgba(188, 26, 34, 0.1);
+    border: 1px solid rgba(188, 26, 34, 0.2);
+    color: var(--primary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.02);
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(0, 0, 0, 0.01);
+  }
+
+  .font-bold {
+    font-weight: 700;
+    color: var(--secondary);
+  }
+
+  .font-semibold {
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.4rem;
+  }
+
+  .status-active {
+    background-color: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+
+  .status-inactive {
+    background-color: #a0aec0;
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-xs {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .btn-danger:hover {
+    background: var(--primary);
+    color: white;
+  }
+</style>

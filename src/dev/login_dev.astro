@@ -1,0 +1,25 @@
+---
+import { demoUsers } from './mockData.js';
+---
+      <!-- Demo Credentials Panel -->
+      <div class="demo-panel glass-panel">
+        <h3>🔑 Acceso Rápido (Modo Demo)</h3>
+        <p>Haz clic en cualquiera de las credenciales de prueba para rellenar el formulario e iniciar sesión automáticamente:</p>
+        
+        <div class="demo-cards">
+          {demoUsers.map((user) => (
+            <div class="demo-card" data-email={user.email} data-password={user.password} title="Hacer clic para rellenar">
+              <div class="demo-card-header">
+                <span class={`role-badge ${user.role}`}>
+                  {user.role === 'admin' ? '👑 Administrador' : '👤 Cliente'}
+                </span>
+                <span class="click-action">Autocompletar ⚡</span>
+              </div>
+              <div class="demo-card-body">
+                <p><strong>Email:</strong> <code>{user.email}</code></p>
+                <p><strong>Clave:</strong> <code>{user.password}</code></p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>

@@ -10,13 +10,20 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-types": "wrangler types"
+    "generate-types": "wrangler types",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.5.1",
     "@supabase/supabase-js": "^2.105.4",
-    "astro": "^6.3.2",
+    "astro": "^6.4.2",
+    "resend": "^3.0.0",
     "wrangler": "^4.90.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "vite": "^7"

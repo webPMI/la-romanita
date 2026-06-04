@@ -1,0 +1,206 @@
+---
+const pathname = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
+
+// Helper para determinar si una ruta está activa
+const isActive = (path: string) => {
+  // Comprobar si coincide exactamente o si termina con la ruta correspondiente
+  const cleanPath = path.replace(/\/$/, "");
+  const cleanPathname = pathname.replace(/\/$/, "");
+  
+  if (cleanPathname === cleanPath) {
+    return 'active';
+  }
+  return '';
+};
+---
+
+<aside class="admin-sidebar glass-panel">
+  <div class="sidebar-header">
+    <span class="sidebar-icon">👑</span>
+    <h2>Admin POS</h2>
+  </div>
+  
+  <nav class="admin-nav">
+    <a href={`${base}admin/dashboard`} class={isActive(`${base}admin/dashboard`)}>📊 <span class="nav-text">Resumen</span></a>
+    <a href={`${base}admin/pedidos`} class={isActive(`${base}admin/pedidos`)}>📦 <span class="nav-text">Pedidos</span></a>
+    <a href={`${base}admin/productos`} class={isActive(`${base}admin/productos`)}>📂 <span class="nav-text">Productos</span></a>
+    <a href={`${base}admin/categorias`} class={isActive(`${base}admin/categorias`)}>🏷️ <span class="nav-text">Categorías</span></a>
+    <a href={`${base}admin/usuarios`} class={isActive(`${base}admin/usuarios`)}>👥 <span class="nav-text">Usuarios</span></a>
+    <a href={`${base}admin/horarios`} class={isActive(`${base}admin/horarios`)}>⏰ <span class="nav-text">Horarios</span></a>
+    <a href={`${base}admin/contacto`} class={isActive(`${base}admin/contacto`)}>📞 <span class="nav-text">Contacto</span></a>
+    <a href={`${base}admin/banners`} class={isActive(`${base}admin/banners`)}>🎉 <span class="nav-text">Banners</span></a>
+    <a href={`${base}user/perfil`} class={isActive(`${base}user/perfil`)}>⚙️ <span class="nav-text">Mi Perfil</span></a>
+    <a href={`${base}menu`} class={isActive(`${base}menu`)}>🛍️ <span class="nav-text">Vista Cliente</span></a>
+    <div class="nav-divider"></div>
+    <a href="#" id="admin-logout" class="logout-link">🚪 <span class="nav-text">Cerrar Sesión</span></a>
+  </nav>
+</aside>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
+    const adminLogout = document.getElementById('admin-logout');
+
+    if (adminLogout) {
+      adminLogout.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        try {
+          // Llamar al endpoint de logout del servidor para limpiar cookies
+          await fetch(`${base}/api/auth/logout`, { method: 'POST' });
+          
+          // Limpiar datos del cliente
+          localStorage.removeItem('currentUser');
+          
+          // Notificar actualización de sesión al navbar
+          window.dispatchEvent(new Event('auth-changed'));
+          
+          // Redirigir al inicio de sesión
+          window.location.href = `${base}/login`;
+        } catch (err) {
+          console.error('Error al cerrar sesión:', err);
+        }
+      });
+    }
+
+    // Centrar automáticamente la opción activa en móviles
+    const activeLink = document.querySelector('.admin-nav a.active');
+    if (activeLink && window.innerWidth <= 768) {
+      setTimeout(() => {
+        activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 150);
+    }
+  });
+</script>
+
+<style>
+  .admin-sidebar {
+    padding: 2rem 1.5rem;
+    height: calc(100vh - 140px);
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .sidebar-icon {
+    font-size: 1.5rem;
+  }
+
+  .admin-sidebar h2 {
+    color: var(--secondary);
+    margin-bottom: 0;
+    font-size: 1.25rem;
+    font-family: var(--font-sans);
+    font-weight: 800;
+  }
+
+  .admin-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+  }
+
+  .admin-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .admin-nav a:hover, .admin-nav a.active {
+    background: rgba(188, 26, 34, 0.05);
+    color: var(--primary);
+  }
+
+  .nav-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 1rem 0;
+    opacity: 0.5;
+  }
+
+  .logout-link {
+    margin-top: auto;
+    color: var(--text-muted) !important;
+  }
+
+  .logout-link:hover {
+    background: rgba(188, 26, 34, 0.1) !important;
+    color: var(--primary) !important;
+  }
+
+  @media (max-width: 768px) {
+    .admin-sidebar {
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      height: 65px;
+      top: auto;
+      z-index: 999;
+      padding: 0 0.75rem;
+      border-radius: 16px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(11, 19, 43, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: var(--color-surface); /* Fondo sólido para que no se superponga texto */
+    }
+    .sidebar-header {
+      display: none;
+    }
+    .admin-nav {
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      gap: 0.35rem;
+      overflow-x: auto; /* Scroll horizontal habilitado */
+      white-space: nowrap;
+      padding: 0.25rem 0;
+      scrollbar-width: none; /* Ocultar scrollbar en Firefox */
+      -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    }
+    .admin-nav::-webkit-scrollbar {
+      display: none; /* Ocultar scrollbar en Chrome y Safari */
+    }
+    .admin-nav a {
+      flex-shrink: 0; /* Prevenir que se encojan */
+      justify-content: center;
+      padding: 0.6rem 0.85rem;
+      font-size: 1.35rem; /* Aumentar tamaño del emoji en versión compacta */
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      margin: 0;
+    }
+    .nav-text {
+      display: none;
+    }
+    .nav-divider {
+      display: none;
+    }
+    .logout-link {
+      margin-top: 0;
+      margin-left: auto; /* Alinear cerrar sesión a la derecha */
+      color: var(--primary) !important;
+    }
+  }
+</style>

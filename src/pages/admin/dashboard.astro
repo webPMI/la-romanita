@@ -1,177 +1,195 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getUserFromSession, getSessionTokens } from '../../lib/auth';
+import { getSupabaseServerClient } from '../../lib/supabase';
 
-// Datos simulados para el admin
-const recentOrders = [
-  { id: "#0012", user: "Carlos G.", items: "2x Sorrentinos, 4x Empanadas", status: "Pendiente", total: "15.00" },
-  { id: "#0011", user: "Maria F.", items: "1x Raviolis, 1x Canelones", status: "Listo", total: "9.50" },
-];
+const base = import.meta.env.BASE_URL;
+
+// Validar la sesión para obtener datos del usuario
+const user = await getUserFromSession(Astro.cookies);
+// Si no hay usuario redirecciona, aunque AdminLayout ya lo maneja
+if (!user || user.role !== 'admin') {
+  return Astro.redirect(`${base}login`);
+}
+
+const { accessToken } = getSessionTokens(Astro.cookies);
+const supabase = getSupabaseServerClient(accessToken);
+
+// Pedidos recientes (últimos 5)
+const { data: recentOrdersData } = await supabase
+  .from('orders')
+  .select('id, user_id, status, total, items, created_at')
+  .order('created_at', { ascending: false })
+  .limit(5);
+
+const recentOrders = recentOrdersData || [];
+
+// KPIs
+const { count: ordersToday = 0 } = await supabase
+  .from('orders')
+  .select('id', { count: 'exact', head: true })
+  .gte('created_at', new Date().toISOString().slice(0, 10));
+
+const { data: ingresosData } = await supabase
+  .from('orders')
+  .select('total, created_at')
+  .gte('created_at', new Date().toISOString().slice(0, 10));
+
+const ingresos = (ingresosData || []).reduce((acc, o) => acc + (o.total || 0), 0);
 ---
 
-<Layout title="Panel de Administración">
-  <div class="admin-layout container animate-fade-in">
-    <aside class="admin-sidebar glass-panel">
-      <h2>Admin POS</h2>
-      <nav class="admin-nav">
-        <a href="#" class="active">Pedidos Activos</a>
-        <a href="#">Catálogo de Productos</a>
-        <a href="#">Usuarios</a>
-        <a href="#">Configuración</a>
-      </nav>
-    </aside>
-
-    <div class="admin-content">
-      <header class="admin-header">
-        <h1>Resumen de Hoy</h1>
-        <div class="stats-grid">
-          <div class="stat-card glass-panel">
-            <h3>Pedidos Hoy</h3>
-            <span class="stat-value">12</span>
-          </div>
-          <div class="stat-card glass-panel">
-            <h3>Ingresos</h3>
-            <span class="stat-value">€145.50</span>
-          </div>
-        </div>
-      </header>
-
-      <section class="orders-section">
-        <h2>Pedidos Recientes</h2>
-        <div class="orders-list">
-          {recentOrders.map((order) => (
-            <div class="order-card glass-panel">
-              <div class="order-header">
-                <span class="order-id">{order.id}</span>
-                <span class={`status badge-${order.status.toLowerCase()}`}>{order.status}</span>
-              </div>
-              <p><strong>Cliente:</strong> {order.user}</p>
-              <p class="order-items">{order.items}</p>
-              <div class="order-footer">
-                <span class="order-total">€{order.total}</span>
-                <div class="order-actions">
-                  <button class="btn-secondary btn-sm">Ver</button>
-                  <button class="btn-primary btn-sm">Avanzar Estado</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+<AdminLayout title="Resumen de Hoy">
+  <div class="stats-grid">
+    <div class="stat-card glass-panel">
+      <h3>Pedidos Hoy</h3>
+      <span class="stat-value">{ordersToday}</span>
+    </div>
+    <div class="stat-card glass-panel">
+      <h3>Ingresos</h3>
+      <span class="stat-value">€{ingresos.toFixed(2)}</span>
+    </div>
+    <div class="stat-card glass-panel">
+      <h3>Sesión Activa</h3>
+      <span class="stat-value-email">{user.email}</span>
     </div>
   </div>
-</Layout>
+
+  <section class="orders-section">
+    <h2>Pedidos Recientes</h2>
+    <div class="orders-list">
+      {recentOrders.length === 0 && <div class="no-orders-msg">No hay pedidos recientes.</div>}
+      {recentOrders.map((order) => (
+        <div class="order-card glass-panel">
+          <div class="order-header">
+            <span class="order-id">#{order.id.slice(0, 8)}</span>
+            <span class={`status badge-${order.status.toLowerCase()}`}>{order.status}</span>
+          </div>
+          <p><strong>Cliente:</strong> {order.user_id ? 'Usuario Registrado' : 'Cliente Invitado'}</p>
+          <p class="order-items">{Array.isArray(order.items) ? order.items.map(i => `${i.qty}x ${i.name}`).join(', ') : ''}</p>
+          <div class="order-footer">
+            <span class="order-total">€{parseFloat(order.total).toFixed(2)}</span>
+            <div class="order-actions">
+              <a href={`${base}admin/pedidos?id=${order.id}`} class="btn-secondary btn-sm">Ver</a>
+              <a href={`${base}admin/pedidos?id=${order.id}&action=next`} class="btn-primary btn-sm">Avanzar Estado</a>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+</AdminLayout>
 
 <style>
-  .admin-layout {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 2rem;
-    padding: 2rem 0;
-  }
-
-  .admin-sidebar {
-    padding: 2rem 1.5rem;
-    height: calc(100vh - 120px);
-    position: sticky;
-    top: 100px;
-  }
-
-  .admin-sidebar h2 {
-    color: var(--secondary);
-    margin-bottom: 2rem;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .admin-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .admin-nav a {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    color: var(--text-muted);
-    transition: all 0.2s;
-  }
-
-  .admin-nav a:hover, .admin-nav a.active {
-    background: rgba(255,255,255,0.05);
-    color: var(--text-main);
-  }
-
-  .admin-header h1 {
-    margin-bottom: 1.5rem;
-  }
-
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
   }
 
   .stat-card {
     padding: 1.5rem;
+    border: 1px solid rgba(11, 19, 43, 0.05);
   }
 
   .stat-card h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--text-muted);
     font-family: var(--font-sans);
+    margin-bottom: 0.5rem;
   }
 
   .stat-value {
     font-size: 2.5rem;
     font-weight: 800;
     color: var(--primary);
+    line-height: 1.1;
+  }
+
+  .stat-value-email {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--secondary);
+    word-break: break-all;
+    margin-top: 0.5rem;
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+  }
+
+  .orders-section h2 {
+    font-size: 1.5rem;
+    color: var(--secondary);
+    margin-bottom: 1.5rem;
   }
 
   .orders-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
+  }
+
+  .no-orders-msg {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
   }
 
   .order-card {
     padding: 1.5rem;
+    border: 1px solid rgba(11, 19, 43, 0.05);
+    transition: transform 0.2s ease;
+  }
+
+  .order-card:hover {
+    transform: translateY(-2px);
   }
 
   .order-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
   }
 
   .order-id {
-    font-weight: bold;
-    font-size: 1.1rem;
-  }
-
-  .status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: bold;
-  }
-
-  .badge-pendiente {
-    background: rgba(217, 119, 6, 0.2);
+    font-weight: 800;
+    font-size: 1.15rem;
     color: var(--secondary);
   }
 
+  .status {
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-pendiente {
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+  }
+
   .badge-listo {
-    background: rgba(16, 185, 129, 0.2);
+    background: rgba(16, 185, 129, 0.1);
     color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
   }
 
   .order-items {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
   }
 
@@ -179,26 +197,54 @@ const recentOrders = [
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   .order-total {
-    font-size: 1.2rem;
-    font-weight: bold;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-main);
   }
 
   .order-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
-  @media (max-width: 768px) {
-    .admin-layout {
+  .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .stats-grid {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
-    .admin-sidebar {
-      height: auto;
-      position: relative;
-      top: 0;
+    .stat-card {
+      padding: 1rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+    }
+    .order-card {
+      padding: 1rem;
+    }
+    .order-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+    .order-actions {
+      display: flex;
+      width: 100%;
+    }
+    .order-actions button, .order-actions a {
+      flex-grow: 1;
+      text-align: center;
+      justify-content: center;
     }
   }
 </style>
