@@ -59,7 +59,7 @@ describe('API Auth - /api/auth/register', () => {
         expect(mockSignUp).toHaveBeenCalledWith(expect.objectContaining({ email: 't@t.com' }));
     });
 
-    it('debe retornar 200 y registrar al usuario exitosamente', async () => {
+    it('debe retornar 201 y registrar al usuario exitosamente', async () => {
         mockSignUp.mockResolvedValueOnce({
             data: { user: { id: '123', email: 't@t.com' } },
             error: null,
@@ -75,9 +75,9 @@ describe('API Auth - /api/auth/register', () => {
         const response = await POST(req);
         const data = await response.json();
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(data.success).toBe(true);
-        expect(data.user.id).toBe('123');
+        expect(data.user).toBeUndefined();
         expect(mockSignUp).toHaveBeenCalledWith({
             email: 't@t.com',
             password: 'password123',
@@ -124,8 +124,9 @@ describe('API Auth - /api/auth/register', () => {
         const response = await POST(req);
         const data = await response.json();
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(data.success).toBe(true);
+        expect(data.user).toBeUndefined();
         expect(mockSignUp).toHaveBeenCalledWith({
             email: 't@t.com',
             password: 'password123',

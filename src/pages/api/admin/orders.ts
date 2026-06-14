@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const user = await getUserFromSession(cookies);
     if (!user || user.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { accessToken } = getSessionTokens(cookies);
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { id, action } = body;
 
     if (!id || action !== 'next') {
-      return new Response(JSON.stringify({ error: 'Parámetros inválidos.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Parámetros inválidos.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     // 1. Obtener el pedido actual
@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .single();
 
     if (fetchError || !order) {
-      return new Response(JSON.stringify({ error: 'Pedido no encontrado.' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'Pedido no encontrado.' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
     let nextStatus = '';
@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     } else if (order.status === 'listo') {
       nextStatus = 'entregado';
     } else {
-      return new Response(JSON.stringify({ error: 'El pedido ya está en su estado final.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'El pedido ya está en su estado final.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     // 2. Actualizar estado
@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .eq('id', id);
 
     if (updateError) {
-      return new Response(JSON.stringify({ error: updateError.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: updateError.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     // 3. Si el estado cambia a listo, enviar notificación por correo electrónico
@@ -68,10 +68,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, newStatus }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, nextStatus }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };

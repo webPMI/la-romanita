@@ -16,15 +16,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { id, name, category, image_url, price_minorista, price_mayorista, is_offer, is_active } = body;
 
     if (!name || !category || price_minorista === undefined || price_mayorista === undefined) {
-      return new Response(JSON.stringify({ error: 'Faltan campos obligatorios.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Faltan campos obligatorios.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const priceMin = Number(price_minorista);
+    const priceMay = Number(price_mayorista);
+    if (Number.isNaN(priceMin) || priceMin < 0 || Number.isNaN(priceMay) || priceMay < 0) {
+      return new Response(JSON.stringify({ error: 'Los precios deben ser números positivos.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     const productData = {
       name,
       category,
       image_url: image_url || null,
-      price_minorista,
-      price_mayorista,
+      price_minorista: priceMin,
+      price_mayorista: priceMay,
       is_offer: !!is_offer,
       is_active: is_active !== false
     };
@@ -48,14 +54,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (result.error) {
-      return new Response(JSON.stringify({ error: result.error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: result.error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ success: true, product: result.data }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, product: result.data }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };
 
@@ -63,7 +69,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
   try {
     const user = await getUserFromSession(cookies);
     if (!user || user.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { accessToken } = getSessionTokens(cookies);
@@ -71,7 +77,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
 
     const { id } = await request.json();
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID de producto requerido.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'ID de producto requerido.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { error } = await supabase
@@ -80,13 +86,13 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
       .eq('id', id);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };

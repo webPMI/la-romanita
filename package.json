@@ -27,7 +27,9 @@
     "wrangler": "^4.90.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.9",
     "@testing-library/jest-dom": "^6.0.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.8"
   },
   "overrides": {

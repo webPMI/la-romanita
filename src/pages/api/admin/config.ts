@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { type, data } = body;
 
     if (!type || !data || !data.id) {
-      return new Response(JSON.stringify({ error: 'Parámetros inválidos.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Parámetros inválidos.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     let error;
@@ -42,21 +42,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         .eq('id', id);
       error = dbError;
     } else {
-      return new Response(JSON.stringify({ error: 'Tipo de configuración desconocido.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Tipo de configuración desconocido.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Invalida la caché completa en memoria
     clearCache();
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };
 
@@ -72,7 +72,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
 
     const { type, id } = await request.json();
     if (!type || !id) {
-      return new Response(JSON.stringify({ error: 'ID y tipo requeridos.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'ID y tipo requeridos.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     let error;
@@ -83,18 +83,18 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
         .eq('id', id);
       error = dbError;
     } else {
-      return new Response(JSON.stringify({ error: 'Operación no permitida.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Operación no permitida.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     clearCache();
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };

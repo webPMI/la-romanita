@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
-import { clearSessionCookies } from '../../../lib/auth';
+import { clearSessionCookies, getSessionTokens } from '../../../lib/auth';
 import { getSupabaseServerClient } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ cookies }) => {
   try {
-    // Cerramos sesión en Supabase (esto invalida el token)
-    const client = getSupabaseServerClient();
+    // Cerramos sesión en Supabase usando el token real del usuario para invalidarlo en servidor
+    const { accessToken } = getSessionTokens(cookies);
+    const client = getSupabaseServerClient(accessToken);
     await client.auth.signOut();
 
     // Limpiamos las cookies locales del navegador

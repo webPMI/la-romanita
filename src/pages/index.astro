@@ -195,11 +195,11 @@ const direccion = await getCachedData('home_direccion', async () => {
   </section>
 </Layout>
 
-<script>
+<script is:inline>
   // Manejo de feedback interactivo del formulario de contacto
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('homeContactForm');
-    if (form) {
+    if (form instanceof HTMLFormElement) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         alert('¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.');

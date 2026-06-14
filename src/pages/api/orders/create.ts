@@ -24,15 +24,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    // Validar estructura básica de cada ítem antes de ir a la DB
+    for (const item of items) {
+      const qty = Number(item.qty);
+      if (!Number.isInteger(qty) || qty < 1) {
+        return new Response(
+          JSON.stringify({ error: 'La cantidad de cada producto debe ser un número entero mayor que cero.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // 2. Conectar a Supabase
     const accessToken = cookies.get('sb-access-token')?.value;
     const client = getSupabaseServerClient(accessToken);
 
     // 3. Consultar todos los productos en la base de datos para validar precios y evitar fraudes del lado del cliente
-    const productIds = items.map(item => item.product_id || item.id);
+    const productIds = items.map((item: any) => item.product_id || item.id);
     const { data: dbProducts, error: dbError } = await client
       .from('products')
-      .select('id, price_minorista, price_mayorista, name')
+      .select('id, price_minorista, price_mayorista, name, is_active')
       .in('id', productIds);
 
     if (dbError || !dbProducts) {
@@ -49,8 +60,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const verifiedItems = [];
 
     for (const item of items) {
-      const dbProduct = dbProducts.find(p => p.id === (item.product_id || item.id));
-      if (!dbProduct) {
+      const dbProduct = dbProducts.find((p: any) => p.id === (item.product_id || item.id));
+      if (!dbProduct || dbProduct.is_active === false) {
         return new Response(
           JSON.stringify({ error: `El producto "${item.name}" ya no está disponible.` }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -58,14 +69,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
 
       // Escoger el precio correspondiente en base al tipo de cliente
-      const realPrice = isMayorista ? dbProduct.price_mayorista : dbProduct.price_minorista;
-      const subtotal = parseFloat(realPrice as any) * item.qty;
+      const realPrice = isMayorista ? Number(dbProduct.price_mayorista) : Number(dbProduct.price_minorista);
+      const subtotal = realPrice * Math.round(Number(item.qty));
       verifiedTotal += subtotal;
 
       verifiedItems.push({
         product_id: dbProduct.id,
         name: dbProduct.name,
-        qty: item.qty,
+        qty: Math.round(Number(item.qty)),
         price: realPrice
       });
     }
@@ -111,7 +122,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         orderId: newOrder.id,
         total: verifiedTotal
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
 
   } catch (err) {

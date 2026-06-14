@@ -76,8 +76,9 @@ import Layout from '../layouts/Layout.astro';
   </div>
   <div id="toastContainer" class="toast-container"></div>
 </Layout>
-<script>
+<script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
+    const registerForm = document.getElementById('registerForm');
     const nameInput = document.getElementById('name');
     const surnameInput = document.getElementById('surname');
     const emailInput = document.getElementById('email');
@@ -87,15 +88,23 @@ import Layout from '../layouts/Layout.astro';
     const acceptPolicies = document.getElementById('acceptPolicies');
     const submitBtn = document.getElementById('submitBtn');
     const autofillBtn = document.getElementById('autofillBtn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const spinner = submitBtn.querySelector('.spinner');
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const btnText = submitBtn?.querySelector('.btn-text');
+    const spinner = submitBtn?.querySelector('.spinner');
     const registerCard = document.querySelector('.register-card');
     const toastContainer = document.getElementById('toastContainer');
     const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
-    document.getElementById('togglePassword').addEventListener('click', () => {
+
+    if (!registerForm || !nameInput || !surnameInput || !emailInput || !phoneInput || !passwordInput || !confirmPasswordInput || !acceptPolicies || !submitBtn || !autofillBtn || !togglePassword || !toggleConfirmPassword) {
+      console.error('Formulario de registro incompleto en el DOM.');
+      return;
+    }
+
+    togglePassword.addEventListener('click', () => {
       passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
     });
-    document.getElementById('toggleConfirmPassword').addEventListener('click', () => {
+    toggleConfirmPassword.addEventListener('click', () => {
       confirmPasswordInput.type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
     });
     autofillBtn.addEventListener('click', () => {

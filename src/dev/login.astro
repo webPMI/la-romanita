@@ -76,7 +76,7 @@ const base = import.meta.env.BASE_URL;
 </Layout>
 
 <!-- Client-side login verification and autofill script -->
-<script define:vars={{ demoUsers }}>
+<script is:inline define:vars={{ demoUsers }}>
   document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');

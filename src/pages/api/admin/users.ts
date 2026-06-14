@@ -16,11 +16,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { id, name, email, role, client_type, cif, razon_social, direccion_fiscal } = body;
 
     if (!name || !email || !role || !client_type) {
-      return new Response(JSON.stringify({ error: 'Faltan campos obligatorios.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Faltan campos obligatorios.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     if (client_type === 'mayorista' && (!cif || !razon_social || !direccion_fiscal)) {
-      return new Response(JSON.stringify({ error: 'Los datos comerciales son obligatorios para mayoristas.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Los datos comerciales son obligatorios para mayoristas.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     if (id) {
@@ -42,14 +42,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         .eq('id', id);
 
       if (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
       }
     } else {
-      // Crear nuevo usuario en Supabase Auth
-      // Al crear un usuario por el admin, le asignamos una contraseña por defecto
-      const { data, error } = await supabase.auth.signUp({
+      // Crear nuevo usuario en Supabase Auth con contraseña temporal aleatoria.
+      // El usuario debe usar «Olvidé mi contraseña» para establecer la suya.
+      const tempPassword = [
+        crypto.randomUUID(),
+        crypto.randomUUID(),
+      ].join('-').replace(/-/g, '').slice(0, 32);
+
+      const { error } = await supabase.auth.signUp({
         email,
-        password: 'Password123!',
+        password: tempPassword,
         options: {
           data: {
             name,
@@ -63,15 +68,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
 
       if (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+        return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { 'Content-Type': 'application/json' } });
       }
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };
 
@@ -79,7 +84,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
   try {
     const user = await getUserFromSession(cookies);
     if (!user || user.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'No autorizado.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     const { accessToken } = getSessionTokens(cookies);
@@ -87,7 +92,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
 
     const { id } = await request.json();
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID de usuario requerido.' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'ID de usuario requerido.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Borrar perfil del usuario
@@ -97,13 +102,13 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
       .eq('id', id);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (err: any) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message || 'Error del servidor' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };

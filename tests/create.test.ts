@@ -125,7 +125,7 @@ describe('API Orders - /api/orders/create', () => {
         const response = await POST(req);
         const data = await response.json();
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(data.success).toBe(true);
         expect(data.total).toBe(39);
 
@@ -154,7 +154,7 @@ describe('API Orders - /api/orders/create', () => {
         const response = await POST(req);
         const data = await response.json();
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(data.total).toBe(80); // Calculó mayorista
     });
 });

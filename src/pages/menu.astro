@@ -22,14 +22,25 @@ if (error) {
 }
 
 // 4. Agrupar productos por categoría dinámicamente
-const categoriesMap = new Map();
+type ProductRow = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
+  price_minorista: number | string;
+  price_mayorista: number | string;
+  is_offer: boolean | null;
+};
+
+const categoriesMap = new Map<string, ProductRow[]>();
 if (dbProducts) {
-  dbProducts.forEach((product) => {
+  (dbProducts as ProductRow[]).forEach((product) => {
     const cat = product.category || 'Otros';
     if (!categoriesMap.has(cat)) {
       categoriesMap.set(cat, []);
     }
-    categoriesMap.get(cat).push(product);
+    categoriesMap.get(cat)?.push(product);
   });
 }
 
@@ -78,7 +89,7 @@ const isMayorista = user?.client_type === 'mayorista';
                     <h3>{item.name}</h3>
                     <p>{item.description || 'Elaboración artesanal diaria.'}</p>
                     <div class="price-container">
-                      <span class="price">€{parseFloat(price).toFixed(2)}</span>
+                      <span class="price">€{Number(price).toFixed(2)}</span>
                       {isMayorista && (
                         <span class="price-badge">Mayorista</span>
                       )}
@@ -140,7 +151,7 @@ const isMayorista = user?.client_type === 'mayorista';
   <div id="toastContainer" class="toast-container"></div>
 </Layout>
 
-<script>
+<script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
     let cart = [];
     const base = window.location.pathname.startsWith('/la-romanita') ? '/la-romanita' : '';
@@ -363,7 +374,13 @@ const isMayorista = user?.client_type === 'mayorista';
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-product-id');
         const name = btn.getAttribute('data-product-name');
-        const price = parseFloat(btn.getAttribute('data-product-price'));
+        const rawPrice = btn.getAttribute('data-product-price');
+        const price = rawPrice ? parseFloat(rawPrice) : NaN;
+
+        if (!id || !name || Number.isNaN(price)) {
+          showToast('No se pudo añadir el producto. Datos incompletos.', 'error');
+          return;
+        }
 
         const existingItem = cart.find(i => i.id === id);
         if (existingItem) {
